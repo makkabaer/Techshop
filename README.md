@@ -1,8 +1,4 @@
-Hier ist deine Version auf Deutsch, klarer und etwas professioneller formuliert:
-
----
-
-## **TechShop**
+# **TechShop**
 
 ### **Beschreibung**
 
