@@ -38,5 +38,5 @@ TechShop ist ein Webshop-Projekt, bei dem Nutzer Produkte durchsuchen, in einen 
 ### **Team**
 
 * Mishref → Frontend
-* Peter → Sprint-Plan, Meilensteine
-* Markus → Backend, Backlog
+* Peter → Datenbank & Fullstack
+* Markus → Backend
