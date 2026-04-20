@@ -72,6 +72,11 @@ $(function () {
 
         if (isSuccess) {
           form.trigger("reset");
+          // Auto-navigate to dashboard after 1.5 seconds
+          const username = response.username || "User";
+          setTimeout(function () {
+            showDashboard(username);
+          }, 1500);
         }
       },
       error: function (xhr) {
@@ -107,6 +112,47 @@ $(function () {
       },
       error: function (xhr) {
         showMessage("error", getErrorMessage(xhr, "Registration request failed."));
+      }
+    });
+  });
+
+  // Dashboard function
+  function showDashboard(username) {
+    $(".content-section").hide();
+    $("#dashboardSection").show();
+    $("#dashboardUsername").text(username);
+    $("#accountUsername").text(username);
+    $("#dashboardNavItem").show();
+    
+    // Reset navigation
+    $(".nav-link").removeClass("active");
+    $("[data-section='dashboard']").addClass("active");
+    
+    // Hide login/register in nav
+    $("[data-section='login']").parent().hide();
+    $("[data-section='register']").parent().hide();
+    
+    hideMessage();
+  }
+
+  // Logout handler
+  $(document).on("click", "#logoutBtn", function (event) {
+    event.preventDefault();
+    hideMessage();
+
+    $.ajax({
+      url: "/api/logout.php",
+      method: "POST",
+      dataType: "json",
+      success: function (response) {
+        showMessage("success", "You have been logged out.");
+        setTimeout(function () {
+          location.reload(); // Reload page to reset state
+        }, 1500);
+      },
+      error: function (xhr) {
+        // Even if error, logout locally
+        location.reload();
       }
     });
   });

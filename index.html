@@ -32,6 +32,12 @@
           <li class="nav-item">
             <a class="nav-link" href="#" data-section="register">Register</a>
           </li>
+          <li class="nav-item" id="dashboardNavItem" style="display: none;">
+            <a class="nav-link" href="#" data-section="dashboard">Dashboard</a>
+          </li>
+          <li class="nav-item" id="adminNavItem" style="display: none;">
+            <a class="nav-link" href="#" data-section="admin">Admin</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -94,6 +100,44 @@
                   </div>
                   <button type="submit" class="btn btn-success w-100">Register</button>
                 </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboardSection" class="content-section" style="display: none;">
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body p-4">
+                <h2 class="h4 mb-3">Welcome, <span id="dashboardUsername">User</span>! 👋</h2>
+                <p class="text-secondary mb-0">Browse our products and add items to your cart. Coming soon in Sprint 2!</p>
+              </div>
+            </div>
+
+            <div id="productsContainer" class="row">
+              <!-- Produktliste wird hier eingefügt ab Sprint 2 -->
+              <div class="col-12">
+                <p class="text-muted text-center">Products will be loaded here...</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-dark text-white">
+                <h5 class="card-title mb-0">Your Account</h5>
+              </div>
+              <div class="card-body p-4">
+                <div class="mb-3">
+                  <small class="text-muted">Logged in as:</small>
+                  <p class="fw-semibold mb-0"><span id="accountUsername">User</span></p>
+                </div>
+                <hr />
+                <button class="btn btn-outline-primary w-100 mb-2" id="profileBtn" style="display: none;">My Profile</button>
+                <button class="btn btn-outline-secondary w-100 mb-2" id="ordersBtn" style="display: none;">My Orders</button>
+                <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
               </div>
             </div>
           </div>
