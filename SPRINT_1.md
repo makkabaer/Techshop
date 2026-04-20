@@ -16,7 +16,7 @@ Nach Sprint 1 sollte folgende Infrastruktur laufen:
 
 ## Aufgaben nach Person
 
-### **Person B (Backend Developer) – Peter**
+### **Person B (Backend Developer) – Markus**
 **Endverantwortung: Login & Register API**
 
 #### B1: User-Klasse erstellen
@@ -51,7 +51,7 @@ Nach Sprint 1 sollte folgende Infrastruktur laufen:
 
 ---
 
-### **Person C (Database & Fullstack) – Markus**
+### **Person C (Database & Fullstack) – Peter**
 **Endverantwortung: Datenbankaufbau & zentrale DB-Klasse**
 
 #### C1: Datenbank-Struktur finalisieren
