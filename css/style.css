@@ -1,0 +1,29 @@
+:root {
+  --brand-bg-start: #f6f9fc;
+  --brand-bg-end: #eef3f9;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--brand-bg-start), var(--brand-bg-end));
+  display: flex;
+  flex-direction: column;
+}
+
+.site-header {
+  background: radial-gradient(circle at top right, #dff1ff 0%, #f5f9ff 45%, #ffffff 100%);
+  border-bottom: 1px solid #e9ecef;
+}
+
+main {
+  flex: 1;
+}
+
+.card {
+  border-radius: 0.9rem;
+}
+
+#messageArea {
+  max-width: 760px;
+  margin: 0 auto 1.25rem;
+}
