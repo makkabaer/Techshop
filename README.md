@@ -27,6 +27,17 @@ TechShop ist ein Webshop-Projekt, bei dem Nutzer Produkte durchsuchen, in einen 
 
 ---
 
+### **Aktueller Stand (Auth-Frontend)**
+
+* Bootstrap-Layout mit Header, Navigation, Hauptbereich und Footer erstellt.
+* Login-Formular und Register-Formular mit einfacher Umschaltung per Navigation umgesetzt.
+* Anbindung per jQuery AJAX:
+	* `POST /api/login.php` mit E-Mail und Passwort
+	* `POST /api/register.php` mit Username, E-Mail und Passwort
+* Serverantworten (JSON) werden als Erfolg oder Fehler direkt auf der Seite angezeigt.
+
+---
+
 ### **Projektstruktur**
 
 * `/frontend` → Benutzeroberfläche (HTML, CSS, JS)
