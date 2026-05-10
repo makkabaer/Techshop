@@ -8,4 +8,7 @@ $_SESSION = array();
 // Session komplett zerstören
 session_destroy();
 
-echo json_encode(['success' => true, 'message' => 'Erfolgreich abgemeldet.']);
+// Cookie löschen (Zeit in die Vergangenheit setzen)
+setcookie('remember_user', '', time() - 3600, "/");
+
+echo json_encode(['success' => true, 'message' => 'Successfully logged out.']);

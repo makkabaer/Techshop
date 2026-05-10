@@ -4,40 +4,37 @@ header('Content-Type: application/json');
 require_once '../classes/Database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'error' => 'Falsche Anfrage-Methode.']);
+    echo json_encode(['success' => false, 'error' => 'Invalid request method.']);
     exit;
 }
 
-$email = trim($_POST['email'] ?? '');
+$identifier = trim($_POST['email'] ?? ''); // Kann Email ODER Username sein
 $password = $_POST['password'] ?? '';
+$remember = isset($_POST['remember']) && $_POST['remember'] === 'true';
 
-if (empty($email) || empty($password)) {
-    echo json_encode(['success' => false, 'error' => 'E-Mail und Passwort sind erforderlich.']);
+if (empty($identifier) || empty($password)) {
+    echo json_encode(['success' => false, 'error' => 'Username/Email and password are required.']);
     exit;
 }
 
 $db = Database::getInstance();
+$users = $db->query("SELECT * FROM users WHERE email = ? OR username = ?", [$identifier, $identifier]);
 
-// User anhand der E-Mail suchen
-$users = $db->query("SELECT * FROM users WHERE email = ?", [$email]);
-
-// Wenn kein User gefunden wurde
-if (empty($users)) {
-    echo json_encode(['success' => false, 'error' => 'Ungültige Anmeldedaten.']);
+if (empty($users) || !password_verify($password, $users[0]['password_hash'])) {
+    echo json_encode(['success' => false, 'error' => 'Invalid credentials.']);
     exit;
 }
 
-$user = $users[0]; // Das erste (und einzige) Ergebnis aus dem Array holen
+$user = $users[0];
 
-// Passwort verifizieren
-if (password_verify($password, $user['password_hash'])) {
-    // Login erfolgreich: Session-Variablen setzen
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['username'] = $user['username'];
-    
-    // Wir senden den Usernamen zurück, damit das Frontend ihn im Dashboard anzeigen kann (steht so in app.js)
-    echo json_encode(['success' => true, 'message' => 'Login erfolgreich.', 'username' => $user['username']]);
-} else {
-    // Falsches Passwort (wir geben absichtlich die gleiche Fehlermeldung aus wie oben, Hacker sollen nicht wissen, ob die E-Mail stimmt)
-    echo json_encode(['success' => false, 'error' => 'Ungültige Anmeldedaten.']);
+// Session setzen
+$_SESSION['user_id'] = $user['id'];
+$_SESSION['username'] = $user['username'];
+$_SESSION['role'] = $user['role'];
+
+// Cookie setzen, falls "Remember me" aktiviert ist (hält 30 Tage)
+if ($remember) {
+    setcookie('remember_user', $user['id'], time() + (86400 * 30), "/");
 }
+
+echo json_encode(['success' => true, 'message' => 'Login successful.', 'username' => $user['username'], 'role' => $user['role']]);

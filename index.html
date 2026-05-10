@@ -23,22 +23,16 @@
       </button>
       <div class="collapse navbar-collapse" id="mainNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link active" href="#" data-section="home">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" data-section="login">Login</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" data-section="register">Register</a>
-          </li>
-          <li class="nav-item" id="dashboardNavItem" style="display: none;">
-            <a class="nav-link" href="#" data-section="dashboard">Dashboard</a>
-          </li>
-          <li class="nav-item" id="adminNavItem" style="display: none;">
-            <a class="nav-link" href="#" data-section="admin">Admin</a>
-          </li>
-        </ul>
+  <li class="nav-item"><a class="nav-link active" href="#" data-section="home">Home</a></li>
+  <li class="nav-item guest-only"><a class="nav-link" href="#" data-section="login">Login</a></li>
+  <li class="nav-item guest-only"><a class="nav-link" href="#" data-section="register">Register</a></li>
+  <li class="nav-item"><a class="nav-link" href="#" data-section="products">Products</a></li>
+  <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="account">My Account</a></li>
+  <li class="nav-item not-admin"><a class="nav-link" href="#" data-section="cart">Cart</a></li>
+  <li class="nav-item admin-only" style="display: none;"><a class="nav-link" href="#" data-section="admin-products">Edit Products</a></li>
+  <li class="nav-item admin-only" style="display: none;"><a class="nav-link" href="#" data-section="admin-customers">Edit Customers</a></li>
+  <li class="nav-item auth-only" style="display: none;"><button class="btn btn-sm btn-outline-danger ms-2 mt-1" id="navLogoutBtn">Logout</button></li>
+</ul>
       </div>
     </div>
   </nav>
@@ -64,13 +58,17 @@
                 <h2 class="h4 mb-4">Login</h2>
                 <form id="loginForm" novalidate>
                   <div class="mb-3">
-                    <label for="loginEmail" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="loginEmail" name="email" required>
+                    <label for="loginEmail" class="form-label">Email or Username</label>
+<input type="text" class="form-control" id="loginEmail" name="email" required>
                   </div>
                   <div class="mb-3">
                     <label for="loginPassword" class="form-label">Password</label>
                     <input type="password" class="form-control" id="loginPassword" name="password" required>
                   </div>
+                  <div class="mb-3 form-check">
+  <input type="checkbox" class="form-check-input" id="loginRemember" name="remember">
+  <label class="form-check-label" for="loginRemember">Remember me</label>
+</div>
                   <button type="submit" class="btn btn-primary w-100">Login</button>
                 </form>
               </div>
@@ -98,6 +96,7 @@
                     <label for="registerPassword" class="form-label">Password</label>
                     <input type="password" class="form-control" id="registerPassword" name="password" required>
                   </div>
+                  
                   <button type="submit" class="btn btn-success w-100">Register</button>
                 </form>
               </div>
@@ -115,6 +114,15 @@
                 <p class="text-secondary mb-0">Browse our products and add items to your cart. Coming soon in Sprint 2!</p>
               </div>
             </div>
+
+<section id="adminDashboardSection" class="content-section" style="display: none;">
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4 bg-dark text-white rounded">
+      <h2 class="h4 mb-3">Admin Dashboard 🛡️</h2>
+      <p class="mb-0">Welcome back, Admin <span id="adminName"></span>! You have full access.</p>
+    </div>
+  </div>
+</section>
 
             <div id="productsContainer" class="row">
               <!-- Produktliste wird hier eingefügt ab Sprint 2 -->

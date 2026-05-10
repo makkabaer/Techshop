@@ -5,7 +5,7 @@ require_once '../classes/Database.php';
 
 // Prüfen, ob es ein POST-Request ist
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'error' => 'Falsche Anfrage-Methode.']);
+    echo json_encode(['success' => false, 'error' => 'Invalid request method.']);
     exit;
 }
 
@@ -16,7 +16,7 @@ $password = $_POST['password'] ?? '';
 
 // Basis-Validierung
 if (empty($username) || empty($email) || empty($password)) {
-    echo json_encode(['success' => false, 'error' => 'Bitte fülle alle Felder aus.']);
+    echo json_encode(['success' => false, 'error' => 'Please fill out every field.']);
     exit;
 }
 
@@ -25,7 +25,7 @@ $db = Database::getInstance();
 // Prüfen, ob E-Mail oder Username schon existieren
 $existingUser = $db->query("SELECT id FROM users WHERE email = ? OR username = ?", [$email, $username]);
 if (!empty($existingUser)) {
-    echo json_encode(['success' => false, 'error' => 'Benutzername oder E-Mail ist bereits vergeben.']);
+    echo json_encode(['success' => false, 'error' => 'Username or email is already in use.']);
     exit;
 }
 
@@ -40,7 +40,7 @@ $newUserId = $db->insert('users', [
 ]);
 
 if ($newUserId) {
-    echo json_encode(['success' => true, 'message' => 'Registrierung erfolgreich! Du kannst dich jetzt einloggen.']);
+    echo json_encode(['success' => true, 'message' => 'Registration successful! You can now log in.']);
 } else {
-    echo json_encode(['success' => false, 'error' => 'Es gab ein Problem beim Speichern in der Datenbank.']);
+    echo json_encode(['success' => false, 'error' => 'There was a problem saving to the database.']);
 }

@@ -1,4 +1,7 @@
 $(function () {
+  // 1. GANZ WICHTIG: Versteckt sofort alle Sektionen beim Neuladen, damit nichts flackert!
+  $(".content-section").hide();
+
   function showSection(sectionId) {
     $(".content-section").hide();
     $(sectionId).fadeIn(150);
@@ -18,12 +21,8 @@ $(function () {
   }
 
   function getResponseMessage(response) {
-    if (response && response.message) {
-      return response.message;
-    }
-    if (response && response.error) {
-      return response.error;
-    }
+    if (response && response.message) return response.message;
+    if (response && response.error) return response.error;
     return "Request completed.";
   }
 
@@ -31,7 +30,6 @@ $(function () {
     if (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.error)) {
       return xhr.responseJSON.message || xhr.responseJSON.error;
     }
-
     try {
       const data = JSON.parse(xhr.responseText);
       return data.message || data.error || fallbackMessage;
@@ -40,6 +38,7 @@ $(function () {
     }
   }
 
+  // Navigation Click Handler
   $(".nav-link").on("click", function (event) {
     event.preventDefault();
     const section = $(this).data("section");
@@ -47,17 +46,23 @@ $(function () {
     $(".nav-link").removeClass("active");
     $(this).addClass("active");
 
-    showSection("#" + section + "Section");
+    // Falls auf "My Account" geklickt wird, zeige das Dashboard
+    if (section === "account") {
+        showSection("#dashboardSection");
+    } else {
+        showSection("#" + section + "Section");
+    }
   });
 
+  // Login Form Submit
   $("#loginForm").on("submit", function (event) {
     event.preventDefault();
     hideMessage();
 
-    const form = $(this);
     const data = {
       email: $.trim($("#loginEmail").val()),
-      password: $("#loginPassword").val()
+      password: $("#loginPassword").val(),
+      remember: $("#loginRemember").is(":checked") ? "true" : "false"
     };
 
     $.ajax({
@@ -67,16 +72,13 @@ $(function () {
       data: data,
       success: function (response) {
         const isSuccess = response && (response.success === true || response.status === "success");
-        const message = getResponseMessage(response);
-        showMessage(isSuccess ? "success" : "error", message);
+        showMessage(isSuccess ? "success" : "error", getResponseMessage(response));
 
         if (isSuccess) {
-          form.trigger("reset");
-          // Auto-navigate to dashboard after 1.5 seconds
-          const username = response.username || "User";
+          $("#loginForm").trigger("reset");
           setTimeout(function () {
-            showDashboard(username);
-          }, 1500);
+            checkAuthStatus(); // Lädt das UI neu
+          }, 1000);
         }
       },
       error: function (xhr) {
@@ -85,6 +87,7 @@ $(function () {
     });
   });
 
+  // Register Form Submit
   $("#registerForm").on("submit", function (event) {
     event.preventDefault();
     hideMessage();
@@ -103,11 +106,16 @@ $(function () {
       data: data,
       success: function (response) {
         const isSuccess = response && (response.success === true || response.status === "success");
-        const message = getResponseMessage(response);
-        showMessage(isSuccess ? "success" : "error", message);
+        showMessage(isSuccess ? "success" : "error", getResponseMessage(response));
 
         if (isSuccess) {
           form.trigger("reset");
+          setTimeout(function () {
+            showSection("#loginSection"); // Springt zum Login!
+            showMessage("success", "Registration successful! Please log in.");
+            $(".nav-link").removeClass("active");
+            $("[data-section='login']").addClass("active");
+          }, 1500);
         }
       },
       error: function (xhr) {
@@ -116,27 +124,69 @@ $(function () {
     });
   });
 
-  // Dashboard function
+  // Wiederhergestellte Dashboard-Funktion
   function showDashboard(username) {
     $(".content-section").hide();
-    $("#dashboardSection").show();
+    $("#dashboardSection").fadeIn(150);
     $("#dashboardUsername").text(username);
     $("#accountUsername").text(username);
-    $("#dashboardNavItem").show();
     
     // Reset navigation
     $(".nav-link").removeClass("active");
-    $("[data-section='dashboard']").addClass("active");
-    
-    // Hide login/register in nav
-    $("[data-section='login']").parent().hide();
-    $("[data-section='register']").parent().hide();
+    $("[data-section='account']").addClass("active");
     
     hideMessage();
   }
 
-  // Logout handler
-  $(document).on("click", "#logoutBtn", function (event) {
+  // Menü basierend auf dem Login-Status bauen
+  function checkAuthStatus() {
+    $.ajax({
+      url: "backend/api/check_auth.php",
+      method: "GET",
+      dataType: "json",
+      success: function(response) {
+        if (response.logged_in) {
+          $(".guest-only").hide();
+          $(".auth-only").show();
+          
+          if (response.role === 'admin') {
+          $(".admin-only").show();
+          $(".customer-only").hide();
+          $(".not-admin").hide();
+          
+          // Zeige das neue Admin-Dashboard
+          $("#adminName").text(response.username);
+          showSection("#adminDashboardSection"); 
+          
+          $(".nav-link").removeClass("active");
+          // Falls du einen Nav-Link fürs Admin-Dashboard hast, hier markieren
+        } else {
+            $(".admin-only").hide();
+            $(".customer-only").show();
+            $(".not-admin").show();
+            showDashboard(response.username);
+          }
+        } else {
+          // Nicht eingeloggt
+          $(".guest-only").show();
+          $(".auth-only").hide();
+          $(".admin-only").hide();
+          $(".customer-only").hide();
+          $(".not-admin").show();
+          showSection("#homeSection");
+          $(".nav-link").removeClass("active");
+          $("[data-section='home']").addClass("active");
+        }
+      },
+      error: function() {
+        // Fallback, falls der Server mal nicht antwortet
+        showSection("#homeSection");
+      }
+    });
+  }
+
+  // Logout Handler
+  $(document).on("click", "#logoutBtn, #navLogoutBtn", function (event) {
     event.preventDefault();
     hideMessage();
 
@@ -144,18 +194,13 @@ $(function () {
       url: "backend/api/logout.php",
       method: "POST",
       dataType: "json",
-      success: function (response) {
+      success: function () {
+        checkAuthStatus(); // Menü und View zurücksetzen
         showMessage("success", "You have been logged out.");
-        setTimeout(function () {
-          location.reload(); // Reload page to reset state
-        }, 1500);
-      },
-      error: function (xhr) {
-        // Even if error, logout locally
-        location.reload();
       }
     });
   });
 
-  showSection("#homeSection");
+  // 2. GANZ WICHTIG: Status prüfen (das startet den Flow!)
+  checkAuthStatus();
 });
