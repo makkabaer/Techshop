@@ -27,6 +27,11 @@ if (empty($users) || !password_verify($password, $users[0]['password_hash'])) {
 
 $user = $users[0];
 
+if ((int)$user['is_active'] !== 1) {
+        echo json_encode(['success' => false, 'error' => 'Your account has been deactivated. Please contact support.']);
+        exit;
+    }
+
 // Session setzen
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['username'] = $user['username'];
