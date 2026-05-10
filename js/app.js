@@ -61,7 +61,7 @@ $(function () {
     };
 
     $.ajax({
-      url: "/api/login.php",
+      url: "backend/api/login.php",
       method: "POST",
       dataType: "json",
       data: data,
@@ -97,7 +97,7 @@ $(function () {
     };
 
     $.ajax({
-      url: "/api/register.php",
+      url: "backend/api/register.php",
       method: "POST",
       dataType: "json",
       data: data,
@@ -141,7 +141,7 @@ $(function () {
     hideMessage();
 
     $.ajax({
-      url: "/api/logout.php",
+      url: "backend/api/logout.php",
       method: "POST",
       dataType: "json",
       success: function (response) {
