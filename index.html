@@ -115,15 +115,6 @@
               </div>
             </div>
 
-<section id="adminDashboardSection" class="content-section" style="display: none;">
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4 bg-dark text-white rounded">
-      <h2 class="h4 mb-3">Admin Dashboard 🛡️</h2>
-      <p class="mb-0">Welcome back, Admin <span id="adminName"></span>! You have full access.</p>
-    </div>
-  </div>
-</section>
-
             <div id="productsContainer" class="row">
               <!-- Produktliste wird hier eingefügt ab Sprint 2 -->
               <div class="col-12">
@@ -146,6 +137,163 @@
                 <button class="btn btn-outline-primary w-100 mb-2" id="profileBtn" style="display: none;">My Profile</button>
                 <button class="btn btn-outline-secondary w-100 mb-2" id="ordersBtn" style="display: none;">My Orders</button>
                 <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminDashboardSection" class="content-section" style="display: none;">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body p-4 p-md-5">
+                <span class="badge bg-dark text-uppercase mb-3">Admin Area</span>
+                <h2 class="h3 mb-3">Admin-Dashboard</h2>
+                <p class="text-secondary mb-4">Willkommen zurück, <strong id="adminName"></strong>. Über die Bereiche rechts kannst du Produkte und Kunden verwalten.</p>
+                <div class="d-flex flex-wrap gap-2">
+                  <a class="btn btn-outline-dark" href="#" data-section="admin-products">Produkte bearbeiten</a>
+                  <a class="btn btn-dark" href="#" data-section="admin-customers">Kunden bearbeiten</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 bg-light">
+              <div class="card-body p-4">
+                <h3 class="h5 mb-3">Kurzinfo</h3>
+                <ul class="list-unstyled mb-0 text-secondary">
+                  <li class="mb-2">Kundenkonten können aktiviert oder deaktiviert werden.</li>
+                  <li class="mb-2">Für Produktbilder wird multipart form data verwendet.</li>
+                  <li>Alle Admin-Aktionen sind nur für eingeloggte Admins verfügbar.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminCustomersSection" class="content-section" style="display: none;">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+              <div>
+                <span class="badge bg-dark text-uppercase mb-2">Admin Tools</span>
+                <h2 class="h3 mb-1">Kunden bearbeiten</h2>
+                <p class="text-secondary mb-0">Kunden aus der Liste unten deaktivieren oder wieder aktivieren.</p>
+              </div>
+              <button class="btn btn-outline-dark" type="button" id="refreshCustomersBtn">Liste aktualisieren</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Benutzername</th>
+                    <th scope="col">E-Mail</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Erstellt</th>
+                    <th scope="col" class="text-end">Aktion</th>
+                  </tr>
+                </thead>
+                <tbody id="adminCustomersTableBody">
+                  <tr>
+                    <td colspan="6" class="text-center text-secondary py-4">Kunden werden geladen...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="adminCustomersEmpty" class="alert alert-light border d-none mb-0">
+              Keine Kunden gefunden.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminProductsSection" class="content-section" style="display: none;">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body p-4 p-md-5">
+                <span class="badge bg-dark text-uppercase mb-2">Admin Tools</span>
+                <h2 class="h3 mb-4">Produkt anlegen</h2>
+                <form id="addProductForm" enctype="multipart/form-data" novalidate>
+                  <div class="mb-3">
+                    <label for="addProductName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="addProductName" name="name" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="addProductDescription" class="form-label">Beschreibung</label>
+                    <textarea class="form-control" id="addProductDescription" name="description" rows="4"></textarea>
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="addProductPrice" class="form-label">Preis</label>
+                      <input type="number" class="form-control" id="addProductPrice" name="price" step="0.01" min="0" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="addProductRating" class="form-label">Bewertung</label>
+                      <input type="number" class="form-control" id="addProductRating" name="rating" step="0.1" min="0" max="5" value="0">
+                    </div>
+                  </div>
+                  <div class="mb-3 mt-3">
+                    <label for="addProductImage" class="form-label">Produktbild</label>
+                    <input type="file" class="form-control" id="addProductImage" name="product_image" accept="image/*">
+                  </div>
+                  <button type="submit" class="btn btn-dark w-100">Produkt speichern</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body p-4 p-md-5">
+                <h3 class="h4 mb-4">Produkt bearbeiten</h3>
+                <form id="editProductForm" enctype="multipart/form-data" novalidate>
+                  <div class="mb-3">
+                    <label for="editProductId" class="form-label">Produkt-ID</label>
+                    <input type="number" class="form-control" id="editProductId" name="product_id" min="1" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="editProductName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="editProductName" name="name" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="editProductDescription" class="form-label">Beschreibung</label>
+                    <textarea class="form-control" id="editProductDescription" name="description" rows="4"></textarea>
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="editProductPrice" class="form-label">Preis</label>
+                      <input type="number" class="form-control" id="editProductPrice" name="price" step="0.01" min="0" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="editProductRating" class="form-label">Bewertung</label>
+                      <input type="number" class="form-control" id="editProductRating" name="rating" step="0.1" min="0" max="5" value="0">
+                    </div>
+                  </div>
+                  <div class="mb-3 mt-3">
+                    <label for="editProductImage" class="form-label">Bild ersetzen</label>
+                    <input type="file" class="form-control" id="editProductImage" name="product_image" accept="image/*">
+                  </div>
+                  <button type="submit" class="btn btn-outline-dark w-100">Produkt aktualisieren</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+              <div class="card-body p-4 p-md-5">
+                <h3 class="h4 mb-4">Produkt löschen</h3>
+                <form id="deleteProductForm" novalidate>
+                  <div class="mb-3">
+                    <label for="deleteProductId" class="form-label">Produkt-ID</label>
+                    <input type="number" class="form-control" id="deleteProductId" name="product_id" min="1" required>
+                  </div>
+                  <button type="submit" class="btn btn-danger w-100">Produkt löschen</button>
+                </form>
               </div>
             </div>
           </div>

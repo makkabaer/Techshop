@@ -26,7 +26,7 @@ try {
 
     if ($productId <= 0) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Invalid product ID.']);
+        echo json_encode(['success' => false, 'error' => 'Ungültige Produkt-ID.']);
         exit;
     }
 
@@ -34,10 +34,10 @@ try {
     $product = new Product();
     if ($product->delete($productId)) {
         http_response_code(200);
-        echo json_encode(['success' => true, 'message' => 'Product successfully deleted.']);
+        echo json_encode(['success' => true, 'message' => 'Produkt erfolgreich gelöscht.']);
     } else {
         http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Product not found or already deleted.']);
+        echo json_encode(['success' => false, 'error' => 'Produkt nicht gefunden oder bereits gelöscht.']);
     }
 } catch (Exception $e) {
     http_response_code(500);

@@ -25,11 +25,31 @@ if ($method === 'POST') {
     $userId = intval($_POST['user_id'] ?? 0);
     $newStatus = intval($_POST['status'] ?? 1); // 1 für aktiv, 0 für deaktiviert
 
-    if ($userId > 0) {
-        $db->update('users', ['is_active' => $newStatus], ['id' => $userId]);
-        echo json_encode(['success' => true, 'message' => 'User status updated.']);
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Invalid User ID.']);
+    // Validierung: Status muss 0 oder 1 sein
+    if (!in_array($newStatus, [0, 1], true)) {
+        echo json_encode(['success' => false, 'error' => 'Ungültiger Status. Nur 0 oder 1 erlaubt.']);
+        exit;
     }
+
+    // Validierung: User muss existieren und darf kein Admin sein
+    if ($userId <= 0) {
+        echo json_encode(['success' => false, 'error' => 'Ungültige Benutzer-ID.']);
+        exit;
+    }
+
+    $user = $db->query("SELECT role FROM users WHERE id = ?", [$userId]);
+    if (empty($user)) {
+        echo json_encode(['success' => false, 'error' => 'Benutzer nicht gefunden.']);
+        exit;
+    }
+
+    // Schütze Admins vor Änderung
+    if ($user[0]['role'] === 'admin') {
+        echo json_encode(['success' => false, 'error' => 'Admin-Konten können nicht deaktiviert werden.']);
+        exit;
+    }
+
+    $db->update('users', ['is_active' => $newStatus], ['id' => $userId]);
+    echo json_encode(['success' => true, 'message' => 'Benutzerstatus aktualisiert.']);
     exit;
 }

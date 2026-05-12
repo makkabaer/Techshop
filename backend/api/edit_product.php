@@ -30,7 +30,7 @@ try {
 
     if ($productId <= 0 || empty($name) || empty($price)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Product ID, name and price are required.']);
+        echo json_encode(['success' => false, 'error' => 'Produkt-ID, Name und Preis sind erforderlich.']);
         exit;
     }
 
@@ -38,7 +38,7 @@ try {
     $currentProduct = Product::getById($productId);
     if (!$currentProduct) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Product not found.']);
+        echo json_encode(['success' => false, 'error' => 'Produkt nicht gefunden.']);
         exit;
     }
 
@@ -65,16 +65,26 @@ try {
             $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
             $dest_path = '../productpictures/' . $newFileName;
             
+            // Verzeichnis automatisch anlegen, falls nicht vorhanden
+            $uploadFileDir = '../productpictures/';
+            if (!is_dir($uploadFileDir)) {
+                if (!mkdir($uploadFileDir, 0777, true)) {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'error' => 'Upload-Verzeichnis konnte nicht erstellt werden.']);
+                    exit;
+                }
+            }
+            
             if (move_uploaded_file($fileTmpPath, $dest_path)) {
                 $currentImagePath = 'backend/productpictures/' . $newFileName;
             } else {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'Error moving the uploaded file.']);
+                echo json_encode(['success' => false, 'error' => 'Fehler beim Speichern der hochgeladenen Datei.']);
                 exit;
             }
         } else {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Upload failed. Allowed file types: ' . implode(',', $allowedfileExtensions)]);
+            echo json_encode(['success' => false, 'error' => 'Upload fehlgeschlagen. Erlaubte Dateitypen: ' . implode(',', $allowedfileExtensions)]);
             exit;
         }
     }
@@ -89,10 +99,10 @@ try {
         'image_path' => $currentImagePath
     ])) {
         http_response_code(200);
-        echo json_encode(['success' => true, 'message' => 'Product successfully updated!']);
+        echo json_encode(['success' => true, 'message' => 'Produkt erfolgreich aktualisiert!']);
     } else {
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Failed to update product.']);
+        echo json_encode(['success' => false, 'error' => 'Fehler beim Aktualisieren des Produkts.']);
     }
 } catch (Exception $e) {
     http_response_code(500);
