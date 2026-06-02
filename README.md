@@ -58,10 +58,11 @@ Techshop/
 ├── API_DOCUMENTATION.md     # API-Spezifikation (wird gefüllt)
 │
 ├── index.html               # Hauptseite (Login, Register, Dashboard)
-├── css/
-│   └── style.css            # Responsive Design
-├── js/
-│   └── app.js               # Frontend-Logik (jQuery + AJAX)
+├── frontend/
+│   ├── css/
+│   │   └── style.css        # Responsive Design
+│   └── js/
+│       └── app.js           # Frontend-Logik (jQuery + AJAX)
 │
 ├── backend/
 │   ├── api/

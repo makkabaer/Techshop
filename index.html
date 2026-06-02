@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TechShop Authentication</title>
+  <title>TechShop</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="frontend/css/style.css">
 </head>
 <body>
   <header class="py-4 text-center site-header">
@@ -26,9 +26,10 @@
   <li class="nav-item"><a class="nav-link active" href="#" data-section="home">Home</a></li>
   <li class="nav-item guest-only"><a class="nav-link" href="#" data-section="login">Login</a></li>
   <li class="nav-item guest-only"><a class="nav-link" href="#" data-section="register">Register</a></li>
-  <li class="nav-item"><a class="nav-link" href="#" data-section="products">Products</a></li>
+  <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="products">Katalog</a></li>
   <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="account">My Account</a></li>
-  <li class="nav-item not-admin"><a class="nav-link" href="#" data-section="cart">Cart</a></li>
+  <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="orders">Bestellungen</a></li>
+  <li class="nav-item not-admin"><a class="nav-link" href="#" data-section="cart">Cart <span class="badge text-bg-light ms-1" id="navCartCount">0</span></a></li>
   <li class="nav-item admin-only" style="display: none;"><a class="nav-link" href="#" data-section="admin-products">Edit Products</a></li>
   <li class="nav-item admin-only" style="display: none;"><a class="nav-link" href="#" data-section="admin-customers">Edit Customers</a></li>
   <li class="nav-item auth-only" style="display: none;"><button class="btn btn-sm btn-outline-danger ms-2 mt-1" id="navLogoutBtn">Logout</button></li>
@@ -111,7 +112,7 @@
             <div class="card border-0 shadow-sm mb-4">
               <div class="card-body p-4">
                 <h2 class="h4 mb-3">Welcome, <span id="dashboardUsername">User</span>! 👋</h2>
-                <p class="text-secondary mb-0">Browse our products and add items to your cart. Coming soon in Sprint 2!</p>
+                <p class="text-secondary mb-0">Durchsuche unseren Katalog und lege Produkte in deinen Warenkorb.</p>
               </div>
             </div>
 
@@ -135,7 +136,7 @@
                 </div>
                 <hr />
                 <button class="btn btn-outline-primary w-100 mb-2" id="profileBtn" style="display: none;">My Profile</button>
-                <button class="btn btn-outline-secondary w-100 mb-2" id="ordersBtn" style="display: none;">My Orders</button>
+                <button class="btn btn-outline-secondary w-100 mb-2" id="ordersBtn">Meine Bestellungen</button>
                 <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
               </div>
             </div>
@@ -152,8 +153,8 @@
                 <h2 class="h3 mb-3">Admin-Dashboard</h2>
                 <p class="text-secondary mb-4">Willkommen zurück, <strong id="adminName"></strong>. Über die Bereiche rechts kannst du Produkte und Kunden verwalten.</p>
                 <div class="d-flex flex-wrap gap-2">
-                  <a class="btn btn-outline-dark" href="#" data-section="admin-products">Produkte bearbeiten</a>
-                  <a class="btn btn-dark" href="#" data-section="admin-customers">Kunden bearbeiten</a>
+                  <a class="btn btn-outline-dark admin-quick-link" href="#" data-section="admin-products">Produkte bearbeiten</a>
+                  <a class="btn btn-dark admin-quick-link" href="#" data-section="admin-customers">Kunden bearbeiten</a>
                 </div>
               </div>
             </div>
@@ -161,11 +162,11 @@
           <div class="col-lg-4">
             <div class="card border-0 shadow-sm h-100 bg-light">
               <div class="card-body p-4">
-                <h3 class="h5 mb-3">Kurzinfo</h3>
+                <h3 class="h5 mb-3">Admin-Hinweise</h3>
                 <ul class="list-unstyled mb-0 text-secondary">
-                  <li class="mb-2">Kundenkonten können aktiviert oder deaktiviert werden.</li>
-                  <li class="mb-2">Für Produktbilder wird multipart form data verwendet.</li>
-                  <li>Alle Admin-Aktionen sind nur für eingeloggte Admins verfügbar.</li>
+                  <li class="mb-2">Produkte können neu angelegt, aktualisiert oder gelöscht werden.</li>
+                  <li class="mb-2">Kundenkonten lassen sich direkt in der Kundenverwaltung aktivieren oder deaktivieren.</li>
+                  <li>Nutze "Liste aktualisieren", um den neuesten Stand sofort anzuzeigen.</li>
                 </ul>
               </div>
             </div>
@@ -299,8 +300,119 @@
           </div>
         </div>
       </section>
+
+      <section id="cartSection" class="content-section" style="display: none;">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body p-4 p-md-5">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                  <div>
+                    <span class="badge bg-dark text-uppercase mb-2">Sprint 3</span>
+                    <h2 class="h3 mb-1">Warenkorb</h2>
+                    <p class="text-secondary mb-0">Produkte, Mengen und Gesamtsumme auf einen Blick.</p>
+                  </div>
+                  <button class="btn btn-outline-dark" type="button" id="refreshCartBtn">Neu laden</button>
+                </div>
+
+                <div id="cartItemsContainer">
+                  <p class="text-muted mb-0">Warenkorb wird geladen...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body p-4">
+                <h3 class="h5 mb-3">Zusammenfassung</h3>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-secondary">Artikel gesamt</span>
+                  <strong id="cartTotalItems">0</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-4">
+                  <span class="text-secondary">Gesamtpreis</span>
+                  <strong id="cartTotalPrice">EUR 0.00</strong>
+                </div>
+                <a href="#" class="btn btn-dark w-100" data-section="checkout" id="toCheckoutBtn">Zur Kasse</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="checkoutSection" class="content-section" style="display: none;">
+        <div class="row justify-content-center">
+          <div class="col-xl-9">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body p-4 p-md-5">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                  <div>
+                    <span class="badge bg-dark text-uppercase mb-2">Sprint 3</span>
+                    <h2 class="h3 mb-1">Checkout</h2>
+                    <p class="text-secondary mb-0">Lieferadresse eingeben und Bestellung abschliessen.</p>
+                  </div>
+                  <a href="#" class="btn btn-outline-dark" data-section="cart">Zurueck zum Warenkorb</a>
+                </div>
+
+                <form id="checkoutForm" novalidate>
+                  <div class="mb-3">
+                    <label for="checkoutAddress" class="form-label">Lieferadresse</label>
+                    <textarea class="form-control" id="checkoutAddress" rows="4" placeholder="Strasse, Hausnummer, PLZ, Stadt" required></textarea>
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                      <small class="text-secondary d-block">Zu zahlender Betrag</small>
+                      <strong class="fs-5" id="checkoutTotalPrice">EUR 0.00</strong>
+                    </div>
+                    <button type="submit" class="btn btn-success px-4" id="checkoutBuyBtn">Kaufen</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ordersSection" class="content-section" style="display: none;">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+              <div>
+                <span class="badge bg-dark text-uppercase mb-2">Kundenkonto</span>
+                <h2 class="h3 mb-1">Meine Bestellungen</h2>
+                <p class="text-secondary mb-0">Deine bisherigen Bestellungen auf einen Blick.</p>
+              </div>
+              <button class="btn btn-outline-dark" type="button" id="refreshOrdersBtn">Liste aktualisieren</button>
+            </div>
+            <div id="ordersContainer">
+              <p class="text-muted mb-0">Bestellungen werden geladen...</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
+
+  <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="productDetailsTitle">Produktdetails</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+        </div>
+        <div class="modal-body">
+          <img id="productDetailsImage" src="https://placehold.co/600x400/e9ecef/6c757d?text=No+Image" class="img-fluid rounded mb-3 w-100" alt="" style="max-height: 280px; object-fit: cover;">
+          <p class="text-secondary" id="productDetailsDescription"></p>
+          <div class="d-flex justify-content-between align-items-center">
+            <strong id="productDetailsPrice"></strong>
+            <span class="badge text-bg-light border" id="productDetailsRating"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <footer class="py-3 bg-dark text-center text-white-50">
     <div class="container">
@@ -310,6 +422,6 @@
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-  <script src="js/app.js"></script>
+  <script src="frontend/js/app.js"></script>
 </body>
 </html>

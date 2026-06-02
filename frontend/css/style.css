@@ -27,3 +27,9 @@ main {
   max-width: 760px;
   margin: 0 auto 1.25rem;
 }
+
+.admin-quick-link.active {
+  background-color: #212529;
+  border-color: #212529;
+  color: #ffffff;
+}
