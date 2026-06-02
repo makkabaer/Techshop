@@ -111,4 +111,9 @@ class Database {
             die(json_encode(['success' => false, 'error' => 'Delete Fehler: ' . $e->getMessage()]));
         }
     }
+
+    // Methode: getConnection() -> Für Transaktionen (beginTransaction, commit, rollBack)
+    public function getConnection() {
+        return $this->pdo;
+    }
 }

@@ -10,6 +10,7 @@
  *   user_id INT NOT NULL,
  *   order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
  *   total_price DECIMAL(10,2),
+ *   delivery_address TEXT NOT NULL,
  *   status VARCHAR(50) DEFAULT 'pending',
  *   FOREIGN KEY (user_id) REFERENCES users(id)
  * );
@@ -31,77 +32,149 @@ header('Content-Type: application/json; charset=utf-8');
 require_once '../classes/Database.php';
 
 try {
-    // Nur GET-Requests erlaubt
-    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-        http_response_code(405);
-        echo json_encode([
-            'success' => false,
-            'error' => 'HTTP-Methode nicht unterstützt. Nur GET erlaubt.'
-        ]);
-        exit;
-    }
+    $method = $_SERVER['REQUEST_METHOD'];
     
     // Authentifizierung: User muss eingeloggt sein
     if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
-        echo json_encode([
-            'success' => false,
-            'error' => 'Authentifizierung erforderlich. Bitte einloggen.'
-        ]);
+        echo json_encode(['success' => false, 'error' => 'Bitte einloggen.']);
         exit;
     }
     
     $user_id = $_SESSION['user_id'];
     $db = Database::getInstance();
-    
-    // Prüfen, ob orders Tabelle existiert
-    $tables = $db->query("SHOW TABLES LIKE 'orders'");
-    
-    if (empty($tables)) {
-        http_response_code(503);
+
+    // ==========================================
+    // 1. NEU: CHECKOUT (POST)
+    // ==========================================
+    if ($method === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $delivery_address = trim($input['delivery_address'] ?? '');
+
+        if (empty($delivery_address)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Lieferadresse fehlt.']);
+            exit;
+        }
+
+        if (empty($_SESSION['cart'])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Warenkorb ist leer.']);
+            exit;
+        }
+
+        // 1. Preise berechnen 
+        $totalPrice = 0;
+        $orderItems = [];
+        
+        foreach ($_SESSION['cart'] as $product_id => $quantity) {
+            $product = $db->query("SELECT price FROM products WHERE id = ?", [$product_id]);
+            if (!empty($product)) {
+                $price = $product[0]['price'];
+                $totalPrice += ($price * $quantity);
+                $orderItems[] = [
+                    'product_id' => $product_id,
+                    'quantity' => $quantity,
+                    'price' => $price
+                ];
+            }
+        }
+
+        // 2. Transaktion starten 
+        $pdo = $db->getConnection();
+        $pdo->beginTransaction();
+
+        try {
+            // A) Bestellung in 'orders' anlegen
+            $db->insert('orders', [
+                'user_id' => $user_id,
+                'total_price' => $totalPrice,
+                'delivery_address' => $delivery_address,
+                'status' => 'paid' // Wir tun so, als wäre es bezahlt
+            ]);
+            
+            $order_id = $pdo->lastInsertId();
+
+            // B) Einzelne Produkte in 'order_items' speichern
+            foreach ($orderItems as $item) {
+                $db->insert('order_items', [
+                    'order_id' => $order_id,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price']
+                ]);
+            }
+
+            // Transaktion bestätigen
+            $pdo->commit();
+
+            // Warenkorb leeren nach erfolgreichem Kauf!
+            $_SESSION['cart'] = [];
+
+            http_response_code(201);
+            echo json_encode(['success' => true, 'message' => 'Bestellung erfolgreich abgeschlossen!']);
+            exit;
+
+        } catch (Exception $e) {
+            // Bei Fehler: Alles rückgängig machen!
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    // ==========================================
+    // 2. BESTELLHISTORIE (GET)
+    // ==========================================
+    if ($method === 'GET') {
+        
+        // Prüfen, ob orders Tabelle existiert
+        $tables = $db->query("SHOW TABLES LIKE 'orders'");
+        if (empty($tables)) {
+            http_response_code(503);
+            echo json_encode(['success' => false, 'error' => 'Orders-System noch nicht konfiguriert.']);
+            exit;
+        }
+        
+        // Bestellungen für User abrufen
+        $orders = $db->query(
+            "SELECT id, order_date, total_price, status 
+             FROM orders 
+             WHERE user_id = ? 
+             ORDER BY order_date DESC",
+            [$user_id]
+        );
+        
+        // Für jede Bestellung die Items abrufen
+        $ordersWithItems = [];
+        foreach ($orders as $order) {
+            $items = $db->query(
+                "SELECT oi.product_id, p.name, oi.quantity, oi.price 
+                 FROM order_items oi 
+                 JOIN products p ON oi.product_id = p.id 
+                 WHERE oi.order_id = ?",
+                [$order['id']]
+            );
+            
+            $order['items'] = $items;
+            $ordersWithItems[] = $order;
+        }
+        
+        http_response_code(200);
         echo json_encode([
-            'success' => false,
-            'error' => 'Orders-System noch nicht konfiguriert. DB-Tabellen fehlen.',
-            'hint' => 'Bitte die DB-Migration ausführen.'
+            'success' => true,
+            'data' => [
+                'user_id' => (int)$user_id,
+                'orders' => $ordersWithItems,
+            ]
         ]);
         exit;
     }
-    
-    // Bestellungen für User abrufen
-    $orders = $db->query(
-        "SELECT o.id, o.order_date, o.total_price, o.status 
-         FROM orders o 
-         WHERE o.user_id = ? 
-         ORDER BY o.order_date DESC",
-        [$user_id]
-    );
-    
-    // Für jede Bestellung die Items abrufen
-    $ordersWithItems = [];
-    foreach ($orders as $order) {
-        $items = $db->query(
-            "SELECT oi.product_id, p.name, oi.quantity, oi.price 
-             FROM order_items oi 
-             JOIN products p ON oi.product_id = p.id 
-             WHERE oi.order_id = ?",
-            [$order['id']]
-        );
-        
-        $order['items'] = $items;
-        $ordersWithItems[] = $order;
-    }
-    
-    http_response_code(200);
-    echo json_encode([
-        'success' => true,
-        'data' => [
-            'user_id' => (int)$user_id,
-            'orders' => $ordersWithItems,
-            'total_orders' => count($ordersWithItems)
-        ]
-    ]);
-    exit;
 
+    // Ungültige Methode
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Methode nicht erlaubt.']);
+    exit;
+    
 } catch (Exception $e) {
     // Fehlerbehandlung: Wenn Tabelle nicht existiert, wird das abgefangen
     if (strpos($e->getMessage(), "Table") !== false) {
