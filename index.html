@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +11,7 @@
   <header class="py-4 text-center site-header">
     <div class="container">
       <h1 class="display-5 fw-bold mb-0">TechShop</h1>
-      <p class="mb-0 text-light-emphasis">Secure access for your shopping account</p>
+      <p class="mb-0 text-light-emphasis">Secure access to your shopping account</p>
     </div>
   </header>
 
@@ -26,12 +26,13 @@
   <li class="nav-item"><a class="nav-link active" href="#" data-section="home">Home</a></li>
   <li class="nav-item guest-only"><a class="nav-link" href="#" data-section="login">Login</a></li>
   <li class="nav-item guest-only"><a class="nav-link" href="#" data-section="register">Register</a></li>
-  <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="products">Katalog</a></li>
+  <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="products">Catalog</a></li>
   <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="account">My Account</a></li>
-  <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="orders">Bestellungen</a></li>
+  <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="orders">Orders</a></li>
   <li class="nav-item not-admin"><a class="nav-link" href="#" data-section="cart">Cart <span class="badge text-bg-light ms-1" id="navCartCount">0</span></a></li>
   <li class="nav-item admin-only" style="display: none;"><a class="nav-link" href="#" data-section="admin-products">Edit Products</a></li>
   <li class="nav-item admin-only" style="display: none;"><a class="nav-link" href="#" data-section="admin-customers">Edit Customers</a></li>
+  <li class="nav-item admin-only" style="display: none;"><a class="nav-link" href="#" data-section="admin-orders">Manage Orders</a></li>
   <li class="nav-item auth-only" style="display: none;"><button class="btn btn-sm btn-outline-danger ms-2 mt-1" id="navLogoutBtn">Logout</button></li>
 </ul>
       </div>
@@ -46,7 +47,7 @@
         <div class="card border-0 shadow-sm">
           <div class="card-body p-4 p-md-5">
             <h2 class="h3 mb-3">Welcome to TechShop</h2>
-            <p class="text-secondary mb-0">Use the navigation above to login to your existing account or create a new account.</p>
+            <p class="text-secondary mb-0">Use the navigation above to log in to your existing account or create a new account.</p>
           </div>
         </div>
       </section>
@@ -108,36 +109,39 @@
 
       <section id="dashboardSection" class="content-section" style="display: none;">
         <div class="row">
-          <div class="col-lg-8">
+          <div class="col-12">
             <div class="card border-0 shadow-sm mb-4">
               <div class="card-body p-4">
-                <h2 class="h4 mb-3">Welcome, <span id="dashboardUsername">User</span>! 👋</h2>
-                <p class="text-secondary mb-0">Durchsuche unseren Katalog und lege Produkte in deinen Warenkorb.</p>
+                <h2 class="h4 mb-3">Welcome, <span id="dashboardUsername">User</span>!</h2>
+                <p class="text-secondary mb-0">Browse our catalog and add products to your cart.</p>
               </div>
             </div>
 
             <div id="productsContainer" class="row">
-              <!-- Produktliste wird hier eingefügt ab Sprint 2 -->
+              <!-- Product list is inserted here -->
               <div class="col-12">
-                <p class="text-muted text-center">Products will be loaded here...</p>
+                <p class="text-muted text-center">Products are loading...</p>
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div class="col-lg-4">
+      <section id="accountSection" class="content-section" style="display: none;">
+        <div class="row justify-content-center">
+          <div class="col-lg-7 col-xl-6">
             <div class="card border-0 shadow-sm">
-              <div class="card-header bg-dark text-white">
-                <h5 class="card-title mb-0">Your Account</h5>
-              </div>
-              <div class="card-body p-4">
-                <div class="mb-3">
-                  <small class="text-muted">Logged in as:</small>
-                  <p class="fw-semibold mb-0"><span id="accountUsername">User</span></p>
+              <div class="card-body p-4 p-md-5">
+                <span class="badge bg-dark text-uppercase mb-3">Customer Account</span>
+                <h2 class="h3 mb-4">My Account</h2>
+                <div class="border rounded-3 bg-light p-3 mb-4">
+                  <small class="text-secondary d-block mb-1">Logged in as</small>
+                  <strong id="accountUsername">User</strong>
                 </div>
-                <hr />
-                <button class="btn btn-outline-primary w-100 mb-2" id="profileBtn" style="display: none;">My Profile</button>
-                <button class="btn btn-outline-secondary w-100 mb-2" id="ordersBtn">Meine Bestellungen</button>
-                <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-dark" id="ordersBtn">My Orders</button>
+                  <button class="btn btn-danger" id="logoutBtn">Logout</button>
+                </div>
               </div>
             </div>
           </div>
@@ -151,10 +155,11 @@
               <div class="card-body p-4 p-md-5">
                 <span class="badge bg-dark text-uppercase mb-3">Admin Area</span>
                 <h2 class="h3 mb-3">Admin-Dashboard</h2>
-                <p class="text-secondary mb-4">Willkommen zurück, <strong id="adminName"></strong>. Über die Bereiche rechts kannst du Produkte und Kunden verwalten.</p>
+                <p class="text-secondary mb-4">Welcome back, <strong id="adminName"></strong>. Use the sections on the right to manage products, customers, and orders.</p>
                 <div class="d-flex flex-wrap gap-2">
-                  <a class="btn btn-outline-dark admin-quick-link" href="#" data-section="admin-products">Produkte bearbeiten</a>
-                  <a class="btn btn-dark admin-quick-link" href="#" data-section="admin-customers">Kunden bearbeiten</a>
+                  <a class="btn btn-outline-dark admin-quick-link" href="#" data-section="admin-products">Edit Products</a>
+                  <a class="btn btn-dark admin-quick-link" href="#" data-section="admin-customers">Edit Customers</a>
+                  <a class="btn btn-outline-dark admin-quick-link" href="#" data-section="admin-orders">Manage Orders</a>
                 </div>
               </div>
             </div>
@@ -162,11 +167,12 @@
           <div class="col-lg-4">
             <div class="card border-0 shadow-sm h-100 bg-light">
               <div class="card-body p-4">
-                <h3 class="h5 mb-3">Admin-Hinweise</h3>
+                <h3 class="h5 mb-3">Admin Notes</h3>
                 <ul class="list-unstyled mb-0 text-secondary">
-                  <li class="mb-2">Produkte können neu angelegt, aktualisiert oder gelöscht werden.</li>
-                  <li class="mb-2">Kundenkonten lassen sich direkt in der Kundenverwaltung aktivieren oder deaktivieren.</li>
-                  <li>Nutze "Liste aktualisieren", um den neuesten Stand sofort anzuzeigen.</li>
+                  <li class="mb-2">Products can be created, updated, or deleted.</li>
+                  <li class="mb-2">Customer accounts can be activated or deactivated directly.</li>
+                  <li class="mb-2">Products can be removed from existing orders.</li>
+                  <li>Use "Refresh List" to display the latest data.</li>
                 </ul>
               </div>
             </div>
@@ -180,10 +186,10 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
               <div>
                 <span class="badge bg-dark text-uppercase mb-2">Admin Tools</span>
-                <h2 class="h3 mb-1">Kunden bearbeiten</h2>
-                <p class="text-secondary mb-0">Kunden aus der Liste unten deaktivieren oder wieder aktivieren.</p>
+                <h2 class="h3 mb-1">Edit Customers</h2>
+                <p class="text-secondary mb-0">Deactivate or reactivate customers from the list below.</p>
               </div>
-              <button class="btn btn-outline-dark" type="button" id="refreshCustomersBtn">Liste aktualisieren</button>
+              <button class="btn btn-outline-dark" type="button" id="refreshCustomersBtn">Refresh List</button>
             </div>
 
             <div class="table-responsive">
@@ -191,23 +197,63 @@
                 <thead>
                   <tr>
                     <th scope="col">ID</th>
-                    <th scope="col">Benutzername</th>
-                    <th scope="col">E-Mail</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Email</th>
                     <th scope="col">Status</th>
-                    <th scope="col">Erstellt</th>
-                    <th scope="col" class="text-end">Aktion</th>
+                    <th scope="col">Created</th>
+                    <th scope="col" class="text-end">Action</th>
                   </tr>
                 </thead>
                 <tbody id="adminCustomersTableBody">
                   <tr>
-                    <td colspan="6" class="text-center text-secondary py-4">Kunden werden geladen...</td>
+                    <td colspan="6" class="text-center text-secondary py-4">Customers are loading...</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
             <div id="adminCustomersEmpty" class="alert alert-light border d-none mb-0">
-              Keine Kunden gefunden.
+              No customers found.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminOrdersSection" class="content-section" style="display: none;">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+              <div>
+                <span class="badge bg-dark text-uppercase mb-2">Admin Tools</span>
+                <h2 class="h3 mb-1">Manage Orders</h2>
+                <p class="text-secondary mb-0">Review orders and remove individual products when necessary.</p>
+              </div>
+              <button class="btn btn-outline-dark" type="button" id="refreshAdminOrdersBtn">Refresh List</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th scope="col">Order</th>
+                    <th scope="col">Customer</th>
+                    <th scope="col">Product</th>
+                    <th scope="col" class="text-center">Quantity</th>
+                    <th scope="col" class="text-end">Price</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminOrdersTableBody">
+                  <tr>
+                    <td colspan="7" class="text-center text-secondary py-4">Orders are loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="adminOrdersEmpty" class="alert alert-light border d-none mb-0">
+              No orders found.
             </div>
           </div>
         </div>
@@ -219,31 +265,31 @@
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body p-4 p-md-5">
                 <span class="badge bg-dark text-uppercase mb-2">Admin Tools</span>
-                <h2 class="h3 mb-4">Produkt anlegen</h2>
+                <h2 class="h3 mb-4">Create Product</h2>
                 <form id="addProductForm" enctype="multipart/form-data" novalidate>
                   <div class="mb-3">
                     <label for="addProductName" class="form-label">Name</label>
                     <input type="text" class="form-control" id="addProductName" name="name" required>
                   </div>
                   <div class="mb-3">
-                    <label for="addProductDescription" class="form-label">Beschreibung</label>
+                    <label for="addProductDescription" class="form-label">Description</label>
                     <textarea class="form-control" id="addProductDescription" name="description" rows="4"></textarea>
                   </div>
                   <div class="row g-3">
                     <div class="col-md-6">
-                      <label for="addProductPrice" class="form-label">Preis</label>
+                      <label for="addProductPrice" class="form-label">Price</label>
                       <input type="number" class="form-control" id="addProductPrice" name="price" step="0.01" min="0" required>
                     </div>
                     <div class="col-md-6">
-                      <label for="addProductRating" class="form-label">Bewertung</label>
+                      <label for="addProductRating" class="form-label">Rating</label>
                       <input type="number" class="form-control" id="addProductRating" name="rating" step="0.1" min="0" max="5" value="0">
                     </div>
                   </div>
                   <div class="mb-3 mt-3">
-                    <label for="addProductImage" class="form-label">Produktbild</label>
+                    <label for="addProductImage" class="form-label">Product Image</label>
                     <input type="file" class="form-control" id="addProductImage" name="product_image" accept="image/*">
                   </div>
-                  <button type="submit" class="btn btn-dark w-100">Produkt speichern</button>
+                  <button type="submit" class="btn btn-dark w-100">Save Product</button>
                 </form>
               </div>
             </div>
@@ -252,10 +298,10 @@
           <div class="col-lg-6">
             <div class="card border-0 shadow-sm mb-4">
               <div class="card-body p-4 p-md-5">
-                <h3 class="h4 mb-4">Produkt bearbeiten</h3>
+                <h3 class="h4 mb-4">Edit Product</h3>
                 <form id="editProductForm" enctype="multipart/form-data" novalidate>
                   <div class="mb-3">
-                    <label for="editProductId" class="form-label">Produkt-ID</label>
+                    <label for="editProductId" class="form-label">Product ID</label>
                     <input type="number" class="form-control" id="editProductId" name="product_id" min="1" required>
                   </div>
                   <div class="mb-3">
@@ -263,37 +309,37 @@
                     <input type="text" class="form-control" id="editProductName" name="name" required>
                   </div>
                   <div class="mb-3">
-                    <label for="editProductDescription" class="form-label">Beschreibung</label>
+                    <label for="editProductDescription" class="form-label">Description</label>
                     <textarea class="form-control" id="editProductDescription" name="description" rows="4"></textarea>
                   </div>
                   <div class="row g-3">
                     <div class="col-md-6">
-                      <label for="editProductPrice" class="form-label">Preis</label>
+                      <label for="editProductPrice" class="form-label">Price</label>
                       <input type="number" class="form-control" id="editProductPrice" name="price" step="0.01" min="0" required>
                     </div>
                     <div class="col-md-6">
-                      <label for="editProductRating" class="form-label">Bewertung</label>
+                      <label for="editProductRating" class="form-label">Rating</label>
                       <input type="number" class="form-control" id="editProductRating" name="rating" step="0.1" min="0" max="5" value="0">
                     </div>
                   </div>
                   <div class="mb-3 mt-3">
-                    <label for="editProductImage" class="form-label">Bild ersetzen</label>
+                    <label for="editProductImage" class="form-label">Replace Image</label>
                     <input type="file" class="form-control" id="editProductImage" name="product_image" accept="image/*">
                   </div>
-                  <button type="submit" class="btn btn-outline-dark w-100">Produkt aktualisieren</button>
+                  <button type="submit" class="btn btn-outline-dark w-100">Update Product</button>
                 </form>
               </div>
             </div>
 
             <div class="card border-0 shadow-sm">
               <div class="card-body p-4 p-md-5">
-                <h3 class="h4 mb-4">Produkt löschen</h3>
+                <h3 class="h4 mb-4">Delete Product</h3>
                 <form id="deleteProductForm" novalidate>
                   <div class="mb-3">
-                    <label for="deleteProductId" class="form-label">Produkt-ID</label>
+                    <label for="deleteProductId" class="form-label">Product ID</label>
                     <input type="number" class="form-control" id="deleteProductId" name="product_id" min="1" required>
                   </div>
-                  <button type="submit" class="btn btn-danger w-100">Produkt löschen</button>
+                  <button type="submit" class="btn btn-danger w-100">Delete Product</button>
                 </form>
               </div>
             </div>
@@ -309,14 +355,14 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                   <div>
                     <span class="badge bg-dark text-uppercase mb-2">Sprint 3</span>
-                    <h2 class="h3 mb-1">Warenkorb</h2>
-                    <p class="text-secondary mb-0">Produkte, Mengen und Gesamtsumme auf einen Blick.</p>
+                    <h2 class="h3 mb-1">Cart</h2>
+                    <p class="text-secondary mb-0">Review products, quantities, and your total price.</p>
                   </div>
-                  <button class="btn btn-outline-dark" type="button" id="refreshCartBtn">Neu laden</button>
+                  <button class="btn btn-outline-dark" type="button" id="refreshCartBtn">Refresh</button>
                 </div>
 
                 <div id="cartItemsContainer">
-                  <p class="text-muted mb-0">Warenkorb wird geladen...</p>
+                  <p class="text-muted mb-0">Cart is loading...</p>
                 </div>
               </div>
             </div>
@@ -325,16 +371,16 @@
           <div class="col-lg-4">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body p-4">
-                <h3 class="h5 mb-3">Zusammenfassung</h3>
+                <h3 class="h5 mb-3">Summary</h3>
                 <div class="d-flex justify-content-between mb-2">
-                  <span class="text-secondary">Artikel gesamt</span>
+                  <span class="text-secondary">Total Items</span>
                   <strong id="cartTotalItems">0</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-4">
-                  <span class="text-secondary">Gesamtpreis</span>
+                  <span class="text-secondary">Total Price</span>
                   <strong id="cartTotalPrice">EUR 0.00</strong>
                 </div>
-                <a href="#" class="btn btn-dark w-100" data-section="checkout" id="toCheckoutBtn">Zur Kasse</a>
+                <a href="#" class="btn btn-dark w-100" data-section="checkout" id="toCheckoutBtn">Proceed to Checkout</a>
               </div>
             </div>
           </div>
@@ -350,23 +396,23 @@
                   <div>
                     <span class="badge bg-dark text-uppercase mb-2">Sprint 3</span>
                     <h2 class="h3 mb-1">Checkout</h2>
-                    <p class="text-secondary mb-0">Lieferadresse eingeben und Bestellung abschliessen.</p>
+                    <p class="text-secondary mb-0">Enter your delivery address and place your order.</p>
                   </div>
-                  <a href="#" class="btn btn-outline-dark" data-section="cart">Zurueck zum Warenkorb</a>
+                  <a href="#" class="btn btn-outline-dark" data-section="cart">Back to Cart</a>
                 </div>
 
                 <form id="checkoutForm" novalidate>
                   <div class="mb-3">
-                    <label for="checkoutAddress" class="form-label">Lieferadresse</label>
-                    <textarea class="form-control" id="checkoutAddress" rows="4" placeholder="Strasse, Hausnummer, PLZ, Stadt" required></textarea>
+                    <label for="checkoutAddress" class="form-label">Delivery Address</label>
+                    <textarea class="form-control" id="checkoutAddress" rows="4" placeholder="Street, house number, postal code, city" required></textarea>
                   </div>
 
                   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <div>
-                      <small class="text-secondary d-block">Zu zahlender Betrag</small>
+                      <small class="text-secondary d-block">Amount Due</small>
                       <strong class="fs-5" id="checkoutTotalPrice">EUR 0.00</strong>
                     </div>
-                    <button type="submit" class="btn btn-success px-4" id="checkoutBuyBtn">Kaufen</button>
+                    <button type="submit" class="btn btn-success px-4" id="checkoutBuyBtn">Place Order</button>
                   </div>
                 </form>
               </div>
@@ -380,14 +426,14 @@
           <div class="card-body p-4 p-md-5">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
               <div>
-                <span class="badge bg-dark text-uppercase mb-2">Kundenkonto</span>
-                <h2 class="h3 mb-1">Meine Bestellungen</h2>
-                <p class="text-secondary mb-0">Deine bisherigen Bestellungen auf einen Blick.</p>
+                <span class="badge bg-dark text-uppercase mb-2">Customer Account</span>
+                <h2 class="h3 mb-1">My Orders</h2>
+                <p class="text-secondary mb-0">Review your previous orders.</p>
               </div>
-              <button class="btn btn-outline-dark" type="button" id="refreshOrdersBtn">Liste aktualisieren</button>
+              <button class="btn btn-outline-dark" type="button" id="refreshOrdersBtn">Refresh List</button>
             </div>
             <div id="ordersContainer">
-              <p class="text-muted mb-0">Bestellungen werden geladen...</p>
+              <p class="text-muted mb-0">Orders are loading...</p>
             </div>
           </div>
         </div>
@@ -399,8 +445,8 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 class="modal-title fs-5" id="productDetailsTitle">Produktdetails</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+          <h2 class="modal-title fs-5" id="productDetailsTitle">Product Details</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <img id="productDetailsImage" src="https://placehold.co/600x400/e9ecef/6c757d?text=No+Image" class="img-fluid rounded mb-3 w-100" alt="" style="max-height: 280px; object-fit: cover;">
