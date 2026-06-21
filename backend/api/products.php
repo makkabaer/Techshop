@@ -3,8 +3,11 @@
  * GET /api/products.php
  * 
  * Liefert:
- * - GET /api/products.php           -> Alle Produkte
- * - GET /api/products.php?id=5      -> Einzelnes Produkt mit ID 5
+ * - GET /api/products.php                      -> Alle Produkte
+ * - GET /api/products.php?id=5                 -> Einzelnes Produkt mit ID 5
+ * - GET /api/products.php?search=...           -> Produkte mit Textsuche
+ * - GET /api/products.php?category=...         -> Produkte in einer Kategorie
+ * - GET /api/products.php?search=...&category=...  -> Kombinierte Suche
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -42,8 +45,28 @@ try {
             'data' => $product
         ]);
     } else {
-        // Alle Produkte abrufen
-        $products = Product::getAll();
+        // Alle Produkte abrufen oder gefiltert
+        $products = [];
+        $hasSearch = isset($_GET['search']) && !empty(trim($_GET['search']));
+        $hasCategory = isset($_GET['category']) && !empty(trim($_GET['category']));
+
+        if ($hasSearch && $hasCategory) {
+            // Kombinierte Suche
+            $searchTerm = trim($_GET['search']);
+            $category = trim($_GET['category']);
+            $products = Product::searchByTextAndCategory($searchTerm, $category);
+        } elseif ($hasSearch) {
+            // Nur Textsuche
+            $searchTerm = trim($_GET['search']);
+            $products = Product::searchByText($searchTerm);
+        } elseif ($hasCategory) {
+            // Nur Kategorie-Filter
+            $category = trim($_GET['category']);
+            $products = Product::getByCategory($category);
+        } else {
+            // Alle Produkte
+            $products = Product::getAll();
+        }
 
         http_response_code(200);
         echo json_encode([

@@ -197,4 +197,50 @@ class Product {
             'created_at' => $this->created_at
         ];
     }
+
+    /**
+     * Produkte nach Textsuche durchsuchen
+     * @param string $searchTerm Suchbegriff
+     * @return array Array von gefundenen Produkten
+     */
+    public static function searchByText($searchTerm) {
+        $db = Database::getInstance();
+        $searchTerm = '%' . $searchTerm . '%';
+        $sql = "SELECT id, name, description, price, rating, image_path, created_at 
+                FROM products 
+                WHERE name LIKE ? OR description LIKE ?
+                ORDER BY created_at DESC";
+        return $db->query($sql, [$searchTerm, $searchTerm]);
+    }
+
+    /**
+     * Produkte nach Kategorie abrufen
+     * @param string $category Kategorie
+     * @return array Array von Produkten in dieser Kategorie
+     */
+    public static function getByCategory($category) {
+        $db = Database::getInstance();
+        $sql = "SELECT id, name, description, price, rating, image_path, created_at 
+                FROM products 
+                WHERE LOWER(COALESCE(category, '')) = LOWER(?)
+                ORDER BY created_at DESC";
+        return $db->query($sql, [$category]);
+    }
+
+    /**
+     * Produkte nach Textsuche UND Kategorie durchsuchen
+     * @param string $searchTerm Suchbegriff
+     * @param string $category Kategorie
+     * @return array Array von gefundenen Produkten
+     */
+    public static function searchByTextAndCategory($searchTerm, $category) {
+        $db = Database::getInstance();
+        $searchTerm = '%' . $searchTerm . '%';
+        $sql = "SELECT id, name, description, price, rating, image_path, created_at 
+                FROM products 
+                WHERE (name LIKE ? OR description LIKE ?) 
+                AND LOWER(COALESCE(category, '')) = LOWER(?)
+                ORDER BY created_at DESC";
+        return $db->query($sql, [$searchTerm, $searchTerm, $category]);
+    }
 }

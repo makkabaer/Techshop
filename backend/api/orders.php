@@ -85,17 +85,28 @@ try {
         $pdo->beginTransaction();
 
         try {
-            // A) Bestellung in 'orders' anlegen
-            $db->insert('orders', [
+            // A) Rechnungsnummer generieren (falls noch nicht vorhanden)
+            $invoiceNumber = generateInvoiceNumber($db);
+
+            // B) Bestellung in 'orders' anlegen
+            $orderData = [
                 'user_id' => $user_id,
                 'total_price' => $totalPrice,
                 'delivery_address' => $delivery_address,
                 'status' => 'paid' // Wir tun so, als wäre es bezahlt
-            ]);
+            ];
+
+            // Falls 'invoice_number' Spalte existiert, hinzufügen
+            $columns = $db->query("SHOW COLUMNS FROM orders LIKE 'invoice_number'");
+            if (!empty($columns)) {
+                $orderData['invoice_number'] = $invoiceNumber;
+            }
+
+            $db->insert('orders', $orderData);
             
             $order_id = $pdo->lastInsertId();
 
-            // B) Einzelne Produkte in 'order_items' speichern
+            // C) Einzelne Produkte in 'order_items' speichern
             foreach ($orderItems as $item) {
                 $db->insert('order_items', [
                     'order_id' => $order_id,
@@ -112,7 +123,12 @@ try {
             $_SESSION['cart'] = [];
 
             http_response_code(201);
-            echo json_encode(['success' => true, 'message' => 'Bestellung erfolgreich abgeschlossen!']);
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Bestellung erfolgreich abgeschlossen!',
+                'order_id' => $order_id,
+                'invoice_number' => $invoiceNumber
+            ]);
             exit;
 
         } catch (Exception $e) {
@@ -137,7 +153,8 @@ try {
         
         // Bestellungen für User abrufen
         $orders = $db->query(
-            "SELECT id, order_date, total_price, status 
+            "SELECT id, order_date, total_price, status, 
+                    COALESCE(invoice_number, '') as invoice_number 
              FROM orders 
              WHERE user_id = ? 
              ORDER BY order_date DESC",
@@ -192,5 +209,38 @@ try {
         ]);
     }
     exit;
+}
+
+/**
+ * Generiert eine eindeutige Rechnungsnummer
+ * Format: INV-YYYYMMDD-XXXXXX (z.B. INV-20260602-000001)
+ * 
+ * @param Database $db Datenbankinstanz
+ * @return string Generierte Rechnungsnummer
+ */
+function generateInvoiceNumber($db) {
+    $today = date('Ymd');
+    $prefix = 'INV-' . $today . '-';
+    
+    // Letzte Rechnungsnummer des heutigen Tages suchen
+    $result = $db->query(
+        "SELECT invoice_number FROM orders 
+         WHERE invoice_number LIKE ? 
+         ORDER BY invoice_number DESC 
+         LIMIT 1",
+        [$prefix . '%']
+    );
+    
+    if (!empty($result)) {
+        // Extrahiere die Nummer aus der letzten Rechnungsnummer
+        $lastInvoice = $result[0]['invoice_number'];
+        $lastNumber = (int)substr($lastInvoice, -6); // Letzte 6 Ziffern
+        $nextNumber = $lastNumber + 1;
+    } else {
+        // Erste Rechnungsnummer des Tages
+        $nextNumber = 1;
+    }
+    
+    return $prefix . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 }
 ?>

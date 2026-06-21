@@ -33,6 +33,7 @@ if ((int)$user['is_active'] !== 1) {
     }
 
 // Session setzen
+// WICHTIG: Nicht session_destroy() aufrufen - damit bleibt der $_SESSION['cart'] eines Gastes erhalten!
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['username'] = $user['username'];
 $_SESSION['role'] = $user['role'];
