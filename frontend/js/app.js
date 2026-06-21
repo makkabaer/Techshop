@@ -2,6 +2,10 @@ $(function () {
   // Hide all sections immediately to prevent flickering during reloads.
   $(".content-section").hide();
   const productsById = {};
+  let catalogProducts = [];
+  let activeCategory = "";
+  let catalogLastOrders = [];
+  let currentUser = null;
 
   function escapeHtml(value) {
     return $("<div>").text(value == null ? "" : String(value)).html();
@@ -117,6 +121,46 @@ $(function () {
     }
 
     return numericRating.toFixed(1);
+  }
+
+  function maskEmail(email) {
+    const emailText = String(email || "");
+    const parts = emailText.split("@");
+
+    if (parts.length !== 2 || !parts[0]) {
+      return "m***@email.com";
+    }
+
+    return parts[0].charAt(0) + "***@" + parts[1];
+  }
+
+  function getStoredProfileKey(username) {
+    return "techshop_profile_" + String(username || "guest");
+  }
+
+  function getStoredProfile(username) {
+    try {
+      return JSON.parse(localStorage.getItem(getStoredProfileKey(username))) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveStoredProfile(username, profileData) {
+    localStorage.setItem(getStoredProfileKey(username), JSON.stringify(profileData));
+  }
+
+  function saveAccountFormLocally(username, profileData, email) {
+    saveStoredProfile(username, profileData);
+    $("#accountCurrentPassword").val("");
+    $("#accountNewPassword").val("");
+    $("#accountEmail").val("").attr("placeholder", email ? maskEmail(email) : $("#accountEmail").attr("placeholder"));
+    $("#accountUsername").text(username);
+    $("#dashboardUsername").text(username);
+
+    if (currentUser) {
+      currentUser.username = username;
+    }
   }
 
   function requestWithBackendFallback(options) {
@@ -302,6 +346,66 @@ $(function () {
     $container.html(productCards);
   }
 
+  function getProductCategory(product) {
+    return $.trim(product.category_name || product.category || "Other");
+  }
+
+  function renderCategoryTabs(products) {
+    const $tabs = $("#categoryTabs");
+
+    if (!$tabs.length) {
+      return;
+    }
+
+    const categories = [];
+
+    $.each(products, function (_, product) {
+      const category = getProductCategory(product);
+
+      if (category && categories.indexOf(category) === -1) {
+        categories.push(category);
+      }
+    });
+
+    if (!categories.length) {
+      activeCategory = "";
+      $tabs.html('<span class="text-secondary small">No categories available.</span>');
+      return;
+    }
+
+    if (!activeCategory || categories.indexOf(activeCategory) === -1) {
+      activeCategory = categories[0];
+    }
+
+    let html = "";
+
+    $.each(categories, function (_, category) {
+      const isActive = category === activeCategory;
+      html += '<button type="button" class="btn btn-sm ' + (isActive ? "btn-dark" : "btn-outline-dark") + ' js-category-tab" data-category="' + escapeHtml(category) + '">';
+      html += escapeHtml(category);
+      html += "</button>";
+    });
+
+    $tabs.html(html);
+  }
+
+  function applyCatalogFilter() {
+    const searchText = $.trim($("#catalogSearch").val()).toLowerCase();
+    const filteredProducts = catalogProducts.filter(function (product) {
+      const matchesCategory = !activeCategory || getProductCategory(product) === activeCategory;
+      const searchableText = [
+        product.name,
+        product.description,
+        product.category_name
+      ].join(" ").toLowerCase();
+      const matchesSearch = !searchText || searchableText.indexOf(searchText) !== -1;
+
+      return matchesCategory && matchesSearch;
+    });
+
+    renderProducts(filteredProducts);
+  }
+
   function loadProductsFrom(apiUrl) {
     return $.ajax({
       url: apiUrl,
@@ -318,6 +422,7 @@ $(function () {
     }
 
     $container.html('<div class="col-12"><p class="text-muted text-center">Products are loading...</p></div>');
+    activeCategory = "";
 
     const onSuccess = function (response) {
       if (!isSuccessfulResponse(response)) {
@@ -326,11 +431,14 @@ $(function () {
       }
 
       const products = response && Array.isArray(response.data) ? response.data : [];
-      renderProducts(products);
+      catalogProducts = products;
+      renderCategoryTabs(catalogProducts);
+      applyCatalogFilter();
     };
 
     const onError = function (response) {
       $container.html('<div class="col-12"><p class="text-danger text-center">Products could not be loaded.</p></div>');
+      $("#categoryTabs").html('<span class="text-danger small">Categories could not be loaded.</span>');
       if (response && response.success === false) {
         showMessage("error", getResponseMessage(response));
       }
@@ -503,6 +611,7 @@ $(function () {
   function renderOrders(orderData) {
     const $container = $("#ordersContainer");
     const orders = orderData && Array.isArray(orderData.orders) ? orderData.orders : [];
+    catalogLastOrders = orders;
 
     if (!orders.length) {
       $container.html('<div class="alert alert-light border mb-0">You do not have any orders yet.</div>');
@@ -523,7 +632,10 @@ $(function () {
       html += "  </h3>";
       html += '  <div id="order-' + orderId + '" class="accordion-collapse collapse" data-bs-parent="#ordersAccordion">';
       html += '    <div class="accordion-body">';
-      html += '      <p class="mb-3"><span class="badge text-bg-light border">' + escapeHtml(order.status || "pending") + "</span></p>";
+      html += '      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
+      html += '        <p class="mb-0"><span class="badge text-bg-light border">' + escapeHtml(order.status || "pending") + "</span></p>";
+      html += '        <button type="button" class="btn btn-sm btn-outline-dark js-print-invoice" data-order-id="' + orderId + '">Rechnung drucken</button>';
+      html += "      </div>";
       html += '      <div class="table-responsive"><table class="table table-sm align-middle mb-0">';
       html += "        <thead><tr><th>Product</th><th class='text-center'>Quantity</th><th class='text-end'>Price</th></tr></thead><tbody>";
 
@@ -543,6 +655,86 @@ $(function () {
 
     html += "</div>";
     $container.html(html);
+  }
+
+  function loadAccountProfile() {
+    const storedProfile = getStoredProfile(currentUser && currentUser.username);
+
+    $("#accountFullName").val(storedProfile.full_name || "");
+    $("#accountAddress").val(storedProfile.address || "");
+    $("#accountUsernameInput").val(currentUser && currentUser.username ? currentUser.username : "");
+    $("#accountEmail").attr("placeholder", "m***@email.com").val("");
+    $("#accountNewPassword").val("");
+    $("#accountCurrentPassword").val("");
+
+    return $.ajax({
+      url: "backend/api/user_profile.php",
+      method: "GET",
+      dataType: "json"
+    })
+      .done(function (response) {
+        if (!isSuccessfulResponse(response)) {
+          return;
+        }
+
+        const data = response.data || {};
+        const username = data.username || (currentUser && currentUser.username) || "";
+        const profile = getStoredProfile(username);
+
+        currentUser = $.extend({}, currentUser, data);
+        $("#accountUsername").text(username || "User");
+        $("#accountUsernameInput").val(username);
+        $("#accountEmail")
+          .attr("placeholder", data.email || maskEmail(data.email_full))
+          .val("");
+        $("#accountFullName").val(data.full_name || profile.full_name || "");
+        $("#accountAddress").val(data.address || profile.address || "");
+      });
+  }
+
+  function printInvoice(orderId) {
+    const order = catalogLastOrders.find(function (entry) {
+      return Number(entry.id) === Number(orderId);
+    });
+
+    if (!order) {
+      showMessage("error", "Invoice data could not be found.");
+      return;
+    }
+
+    const items = Array.isArray(order.items) ? order.items : [];
+    let rows = "";
+
+    $.each(items, function (_, item) {
+      rows += "<tr>";
+      rows += "<td>" + escapeHtml(item.name || "Unknown Product") + "</td>";
+      rows += "<td style='text-align:center;'>" + (Number(item.quantity) || 0) + "</td>";
+      rows += "<td style='text-align:right;'>" + formatPrice(item.price) + "</td>";
+      rows += "</tr>";
+    });
+
+    const invoiceWindow = window.open("", "_blank", "width=800,height=900");
+
+    if (!invoiceWindow) {
+      showMessage("error", "Invoice window could not be opened.");
+      return;
+    }
+
+    invoiceWindow.document.write(
+      "<!doctype html><html><head><title>Invoice #" + order.id + "</title>" +
+      "<style>body{font-family:Arial,sans-serif;margin:40px;color:#212529;}h1{margin-bottom:8px;}table{width:100%;border-collapse:collapse;margin-top:24px;}th,td{border-bottom:1px solid #dee2e6;padding:10px;text-align:left;}th{background:#f8f9fa;} .total{text-align:right;font-size:18px;margin-top:24px;font-weight:bold;}</style>" +
+      "</head><body>" +
+      "<h1>Invoice</h1>" +
+      "<p><strong>Order:</strong> #" + escapeHtml(order.id) + "</p>" +
+      "<p><strong>Invoice Number:</strong> " + escapeHtml(order.invoice_number || "-") + "</p>" +
+      "<p><strong>Date:</strong> " + escapeHtml(order.order_date || "-") + "</p>" +
+      "<p><strong>Status:</strong> " + escapeHtml(order.status || "pending") + "</p>" +
+      "<table><thead><tr><th>Product</th><th style='text-align:center;'>Quantity</th><th style='text-align:right;'>Price</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+      "<p class='total'>Total: " + formatPrice(order.total_price) + "</p>" +
+      "<script>window.onload=function(){window.print();};<\/script>" +
+      "</body></html>"
+    );
+    invoiceWindow.document.close();
   }
 
   function loadOrders() {
@@ -658,6 +850,7 @@ $(function () {
       checkAuthStatus();
     } else if (section === "account") {
       showSection("#accountSection");
+      loadAccountProfile();
     } else if (section === "products") {
       showSection("#dashboardSection");
       loadProductCatalog();
@@ -665,6 +858,13 @@ $(function () {
       showSection("#cartSection");
       loadCart();
     } else if (section === "checkout") {
+      if (!currentUser || !currentUser.logged_in) {
+        showSection("#loginSection");
+        setActiveNav("login");
+        showMessage("error", "Please log in before checkout.");
+        return;
+      }
+
       showSection("#checkoutSection");
       setActiveNav("cart");
       loadCart();
@@ -739,6 +939,8 @@ $(function () {
     const $submitButton = form.find("[type='submit']");
     const data = {
       username: $.trim($("#registerUsername").val()),
+      full_name: $.trim($("#registerFullName").val()),
+      address: $.trim($("#registerAddress").val()),
       email: $.trim($("#registerEmail").val()),
       password: $("#registerPassword").val()
     };
@@ -755,6 +957,10 @@ $(function () {
         showMessage(isSuccess ? "success" : "error", getResponseMessage(response));
 
         if (isSuccess) {
+          saveStoredProfile(data.username, {
+            full_name: data.full_name,
+            address: data.address
+          });
           form.trigger("reset");
           setTimeout(function () {
             showSection("#loginSection"); // Switch to the login form
@@ -839,6 +1045,12 @@ $(function () {
       dataType: "json",
       success: function (response) {
         if (response.logged_in) {
+          currentUser = {
+            logged_in: true,
+            username: response.username,
+            role: response.role
+          };
+
           $(".guest-only").hide();
           $(".auth-only").show();
 
@@ -856,6 +1068,7 @@ $(function () {
           }
         } else {
           // Not logged in
+          currentUser = null;
           $(".guest-only").show();
           $(".auth-only").hide();
           $(".admin-only").hide();
@@ -929,6 +1142,84 @@ $(function () {
     setActiveNav("orders");
     showSection("#ordersSection");
     runWithBusyButton($button, loadOrders);
+  });
+
+  $(document).on("input", "#catalogSearch", function () {
+    applyCatalogFilter();
+  });
+
+  $(document).on("click", ".js-category-tab", function () {
+    activeCategory = String($(this).data("category") || "");
+    renderCategoryTabs(catalogProducts);
+    applyCatalogFilter();
+  });
+
+  $(document).on("click", ".js-print-invoice", function () {
+    printInvoice($(this).data("order-id"));
+  });
+
+  $(document).on("submit", "#accountForm", function (event) {
+    event.preventDefault();
+    hideMessage();
+
+    if (!validateForm("#accountForm")) {
+      return;
+    }
+
+    const $submitButton = $("#saveAccountBtn");
+    const username = $.trim($("#accountUsernameInput").val());
+    const email = $.trim($("#accountEmail").val());
+    const newPassword = $("#accountNewPassword").val();
+    const oldPassword = $("#accountCurrentPassword").val();
+    const profileData = {
+      full_name: $.trim($("#accountFullName").val()),
+      address: $.trim($("#accountAddress").val())
+    };
+    const requestData = {
+      username: username,
+      old_password: oldPassword
+    };
+
+    if (email) {
+      requestData.email = email;
+    }
+
+    if (newPassword) {
+      requestData.new_password = newPassword;
+    }
+
+    setButtonBusy($submitButton, true);
+
+    $.ajax({
+      url: "backend/api/user_profile.php",
+      method: "POST",
+      dataType: "json",
+      contentType: "application/json",
+      data: JSON.stringify(requestData)
+    })
+      .done(function (response) {
+        if (!isSuccessfulResponse(response)) {
+          showMessage("error", getResponseMessage(response));
+          return;
+        }
+
+        saveAccountFormLocally(username, profileData, email);
+        showMessage("success", getResponseMessage(response));
+      })
+      .fail(function (xhr) {
+        const errorText = getErrorMessage(xhr, "Profile could not be saved.");
+
+        if (errorText === "No changes to apply.") {
+          saveAccountFormLocally(username, profileData, email);
+          showMessage("success", "Profile updated successfully.");
+          return;
+        }
+
+        showMessage("error", errorText);
+      })
+      .always(function () {
+        setButtonBusy($submitButton, false);
+      });
   });
 
   $(document).on("click", ".js-product-details", function () {

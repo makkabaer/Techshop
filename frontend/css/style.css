@@ -33,3 +33,11 @@ main {
   border-color: #212529;
   color: #ffffff;
 }
+
+#categoryTabs .btn {
+  min-width: 72px;
+}
+
+#catalogSearch {
+  min-height: 42px;
+}

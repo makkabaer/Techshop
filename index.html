@@ -91,8 +91,16 @@
                     <input type="text" class="form-control" id="registerUsername" name="username" required>
                   </div>
                   <div class="mb-3">
+                    <label for="registerFullName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="registerFullName" name="full_name" required>
+                  </div>
+                  <div class="mb-3">
                     <label for="registerEmail" class="form-label">Email</label>
                     <input type="email" class="form-control" id="registerEmail" name="email" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="registerAddress" class="form-label">Address</label>
+                    <textarea class="form-control" id="registerAddress" name="address" rows="3" placeholder="Street, house number, postal code, city" required></textarea>
                   </div>
                   <div class="mb-3">
                     <label for="registerPassword" class="form-label">Password</label>
@@ -117,6 +125,23 @@
               </div>
             </div>
 
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body p-4">
+                <div class="row g-3 align-items-end">
+                  <div class="col-lg-5">
+                    <label for="catalogSearch" class="form-label">Search products</label>
+                    <input type="search" class="form-control" id="catalogSearch" placeholder="Type to filter products">
+                  </div>
+                  <div class="col-lg-7">
+                    <label class="form-label d-block">Categories</label>
+                    <div class="d-flex flex-wrap gap-2" id="categoryTabs">
+                      <span class="text-secondary small">Categories are loading...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div id="productsContainer" class="row">
               <!-- Product list is inserted here -->
               <div class="col-12">
@@ -138,6 +163,33 @@
                   <small class="text-secondary d-block mb-1">Logged in as</small>
                   <strong id="accountUsername">User</strong>
                 </div>
+                <form id="accountForm" class="mb-4" novalidate>
+                  <div class="mb-3">
+                    <label for="accountFullName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="accountFullName" name="full_name" placeholder="Your full name">
+                  </div>
+                  <div class="mb-3">
+                    <label for="accountAddress" class="form-label">Address</label>
+                    <textarea class="form-control" id="accountAddress" name="address" rows="3" placeholder="Street, house number, postal code, city"></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label for="accountUsernameInput" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="accountUsernameInput" name="username" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="accountEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="accountEmail" name="email" placeholder="m***@email.com">
+                  </div>
+                  <div class="mb-3">
+                    <label for="accountNewPassword" class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="accountNewPassword" name="new_password" placeholder="Leave empty to keep current password">
+                  </div>
+                  <div class="mb-3">
+                    <label for="accountCurrentPassword" class="form-label">Current Password</label>
+                    <input type="password" class="form-control" id="accountCurrentPassword" name="old_password" required>
+                  </div>
+                  <button type="submit" class="btn btn-dark w-100" id="saveAccountBtn">Save Changes</button>
+                </form>
                 <div class="d-grid gap-2">
                   <button class="btn btn-outline-dark" id="ordersBtn">My Orders</button>
                   <button class="btn btn-danger" id="logoutBtn">Logout</button>
