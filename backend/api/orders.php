@@ -37,7 +37,7 @@ try {
     // Authentifizierung: User muss eingeloggt sein
     if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Bitte einloggen.']);
+        echo json_encode(['success' => false, 'error' => 'Please log in.']);
         exit;
     }
     
@@ -53,13 +53,13 @@ try {
 
         if (empty($delivery_address)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Lieferadresse fehlt.']);
+            echo json_encode(['success' => false, 'error' => 'Delivery address is missing.']);
             exit;
         }
 
         if (empty($_SESSION['cart'])) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Warenkorb ist leer.']);
+            echo json_encode(['success' => false, 'error' => 'Cart is empty.']);
             exit;
         }
 
@@ -125,7 +125,7 @@ try {
             http_response_code(201);
             echo json_encode([
                 'success' => true, 
-                'message' => 'Bestellung erfolgreich abgeschlossen!',
+                'message' => 'Order placed successfully!',
                 'order_id' => $order_id,
                 'invoice_number' => $invoiceNumber
             ]);
@@ -147,7 +147,7 @@ try {
         $tables = $db->query("SHOW TABLES LIKE 'orders'");
         if (empty($tables)) {
             http_response_code(503);
-            echo json_encode(['success' => false, 'error' => 'Orders-System noch nicht konfiguriert.']);
+            echo json_encode(['success' => false, 'error' => 'Order system not configured yet.']);
             exit;
         }
         
@@ -157,7 +157,7 @@ try {
                     COALESCE(invoice_number, '') as invoice_number 
              FROM orders 
              WHERE user_id = ? 
-             ORDER BY order_date DESC",
+             ORDER BY order_date ASC",
             [$user_id]
         );
         
@@ -189,7 +189,7 @@ try {
 
     // Ungültige Methode
     http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Methode nicht erlaubt.']);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed.']);
     exit;
     
 } catch (Exception $e) {
@@ -198,14 +198,14 @@ try {
         http_response_code(503);
         echo json_encode([
             'success' => false,
-            'error' => 'Orders-System noch nicht konfiguriert.',
-            'hint' => 'Bitte DB-Migration ausführen.'
+            'error' => 'Order system not configured yet.',
+            'hint' => 'Please run DB migration.'
         ]);
     } else {
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => 'Fehler beim Abrufen der Bestellungen: ' . $e->getMessage()
+            'error' => 'Error fetching orders:' . $e->getMessage()
         ]);
     }
     exit;

@@ -79,9 +79,10 @@ class Product {
      */
     public static function getAll() {
         $db = Database::getInstance();
-        $sql = "SELECT id, name, description, price, rating, image_path, created_at 
-                FROM products 
-                ORDER BY created_at DESC";
+        $sql = "SELECT p.id, p.name, p.description, p.price, p.rating, p.image_path, p.created_at, c.category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                ORDER BY p.created_at DESC";
         return $db->query($sql);
     }
 
@@ -92,16 +93,17 @@ class Product {
      */
     public static function getById($id) {
         $db = Database::getInstance();
-        $sql = "SELECT id, name, description, price, rating, image_path, created_at 
-                FROM products 
-                WHERE id = ?";
+        $sql = "SELECT p.id, p.name, p.description, p.price, p.rating, p.image_path, p.created_at, c.category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                WHERE p.id = ?";
         $results = $db->query($sql, [$id]);
         return !empty($results) ? $results[0] : null;
     }
 
     /**
      * Neues Produkt erstellen
-     * @param array $data Produktdaten (name, description, price, rating, image_path)
+     * @param array $data Produktdaten (name, description, price, rating, image_path, category_id)
      * @return int|false Neue Produkt-ID oder false
      */
     public function create($data) {
@@ -115,7 +117,9 @@ class Product {
             'description' => trim($data['description'] ?? ''),
             'price' => floatval($data['price']),
             'rating' => floatval($data['rating'] ?? 0),
-            'image_path' => $data['image_path'] ?? null
+            'image_path' => $data['image_path'] ?? null,
+            // NEU: category_id sicher abspeichern (null, wenn leer)
+            'category_id' => !empty($data['category_id']) ? intval($data['category_id']) : null
         ];
 
         return $this->db->insert('products', $insertData);
@@ -148,6 +152,10 @@ class Product {
         }
         if (isset($data['image_path'])) {
             $updateData['image_path'] = $data['image_path'];
+        }
+        // NEU: category_id beim Update berücksichtigen
+        if (isset($data['category_id'])) {
+            $updateData['category_id'] = $data['category_id'] !== '' ? intval($data['category_id']) : null;
         }
 
         if (empty($updateData)) {
@@ -206,10 +214,11 @@ class Product {
     public static function searchByText($searchTerm) {
         $db = Database::getInstance();
         $searchTerm = '%' . $searchTerm . '%';
-        $sql = "SELECT id, name, description, price, rating, image_path, created_at 
-                FROM products 
-                WHERE name LIKE ? OR description LIKE ?
-                ORDER BY created_at DESC";
+        $sql = "SELECT p.id, p.name, p.description, p.price, p.rating, p.image_path, p.created_at, c.category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                WHERE p.name LIKE ? OR p.description LIKE ?
+                ORDER BY p.created_at DESC";
         return $db->query($sql, [$searchTerm, $searchTerm]);
     }
 
@@ -220,10 +229,11 @@ class Product {
      */
     public static function getByCategory($category) {
         $db = Database::getInstance();
-        $sql = "SELECT id, name, description, price, rating, image_path, created_at 
-                FROM products 
-                WHERE LOWER(COALESCE(category, '')) = LOWER(?)
-                ORDER BY created_at DESC";
+        $sql = "SELECT p.id, p.name, p.description, p.price, p.rating, p.image_path, p.created_at, c.category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                WHERE LOWER(COALESCE(c.category_name, '')) = LOWER(?)
+                ORDER BY p.created_at DESC";
         return $db->query($sql, [$category]);
     }
 
@@ -236,11 +246,12 @@ class Product {
     public static function searchByTextAndCategory($searchTerm, $category) {
         $db = Database::getInstance();
         $searchTerm = '%' . $searchTerm . '%';
-        $sql = "SELECT id, name, description, price, rating, image_path, created_at 
-                FROM products 
-                WHERE (name LIKE ? OR description LIKE ?) 
-                AND LOWER(COALESCE(category, '')) = LOWER(?)
-                ORDER BY created_at DESC";
+        $sql = "SELECT p.id, p.name, p.description, p.price, p.rating, p.image_path, p.created_at, c.category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                WHERE (p.name LIKE ? OR p.description LIKE ?) 
+                AND LOWER(COALESCE(c.category_name, '')) = LOWER(?)
+                ORDER BY p.created_at DESC";
         return $db->query($sql, [$searchTerm, $searchTerm, $category]);
     }
 }

@@ -28,10 +28,12 @@ try {
     $description = trim($_POST['description'] ?? '');
     $price = floatval($_POST['price'] ?? 0);
     $rating = floatval($_POST['rating'] ?? 0);
+    // NEU: Kategorie auslesen
+    $categoryId = isset($_POST['category_id']) ? trim($_POST['category_id']) : '';
 
     if (empty($name) || empty($price)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Produktname und Preis sind erforderlich.']);
+        echo json_encode(['success' => false, 'error' => 'Product name and price are required.']);
         exit;
     }
 
@@ -56,7 +58,7 @@ try {
             if (!is_dir($uploadFileDir)) {
                 if (!mkdir($uploadFileDir, 0777, true)) {
                     http_response_code(500);
-                    echo json_encode(['success' => false, 'error' => 'Upload-Verzeichnis konnte nicht erstellt werden.']);
+                    echo json_encode(['success' => false, 'error' => 'Could not create upload directory.']);
                     exit;
                 }
             }
@@ -66,12 +68,12 @@ try {
                 $imagePath = 'backend/productpictures/' . $newFileName;
             } else {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'Fehler beim Speichern der hochgeladenen Datei.']);
+                echo json_encode(['success' => false, 'error' => 'Error saving the uploaded file.']);
                 exit;
             }
         } else {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Upload fehlgeschlagen. Erlaubte Dateitypen: ' . implode(',', $allowedfileExtensions)]);
+            echo json_encode(['success' => false, 'error' => 'Upload failed. Allowed file types: ' . implode(',', $allowedfileExtensions)]);
             exit;
         }
     }
@@ -83,19 +85,20 @@ try {
         'description' => $description,
         'price' => $price,
         'rating' => $rating,
-        'image_path' => $imagePath
+        'image_path' => $imagePath,
+        'category_id' => $categoryId // NEU: Kategorie an die Klasse übergeben
     ]);
 
     if ($newProductId) {
         http_response_code(201);
         echo json_encode([
             'success' => true,
-            'message' => 'Produkt erfolgreich angelegt!',
+            'message' => 'Product created successfully!',
             'product_id' => $newProductId
         ]);
     } else {
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Datenbankfehler beim Speichern des Produkts.']);
+        echo json_encode(['success' => false, 'error' => 'Database error while saving the product.']);
     }
 } catch (Exception $e) {
     http_response_code(500);

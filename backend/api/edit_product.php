@@ -27,10 +27,12 @@ try {
     $description = trim($_POST['description'] ?? '');
     $price = floatval($_POST['price'] ?? 0);
     $rating = floatval($_POST['rating'] ?? 0);
+    // NEU: Kategorie auslesen
+    $categoryId = isset($_POST['category_id']) ? trim($_POST['category_id']) : '';
 
     if ($productId <= 0 || empty($name) || empty($price)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Produkt-ID, Name und Preis sind erforderlich.']);
+        echo json_encode(['success' => false, 'error' => 'Product ID, name, and price are required.']);
         exit;
     }
 
@@ -38,7 +40,7 @@ try {
     $currentProduct = Product::getById($productId);
     if (!$currentProduct) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Produkt nicht gefunden.']);
+        echo json_encode(['success' => false, 'error' => 'Product not found.']);
         exit;
     }
 
@@ -70,7 +72,7 @@ try {
             if (!is_dir($uploadFileDir)) {
                 if (!mkdir($uploadFileDir, 0777, true)) {
                     http_response_code(500);
-                    echo json_encode(['success' => false, 'error' => 'Upload-Verzeichnis konnte nicht erstellt werden.']);
+                    echo json_encode(['success' => false, 'error' => 'Could not create upload directory.']);
                     exit;
                 }
             }
@@ -79,12 +81,12 @@ try {
                 $currentImagePath = 'backend/productpictures/' . $newFileName;
             } else {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'Fehler beim Speichern der hochgeladenen Datei.']);
+                echo json_encode(['success' => false, 'error' => 'Error saving the uploaded file.']);
                 exit;
             }
         } else {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Upload fehlgeschlagen. Erlaubte Dateitypen: ' . implode(',', $allowedfileExtensions)]);
+            echo json_encode(['success' => false, 'error' => 'Upload failed. Allowed file types: ' . implode(',', $allowedfileExtensions)]);
             exit;
         }
     }
@@ -96,13 +98,14 @@ try {
         'description' => $description,
         'price' => $price,
         'rating' => $rating,
-        'image_path' => $currentImagePath
+        'image_path' => $currentImagePath,
+        'category_id' => $categoryId // NEU: Kategorie an die Klasse übergeben
     ])) {
         http_response_code(200);
-        echo json_encode(['success' => true, 'message' => 'Produkt erfolgreich aktualisiert!']);
+        echo json_encode(['success' => true, 'message' => 'Product updated successfully.']);
     } else {
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Fehler beim Aktualisieren des Produkts.']);
+        echo json_encode(['success' => false, 'error' => 'Error updating the product.']);
     }
 } catch (Exception $e) {
     http_response_code(500);

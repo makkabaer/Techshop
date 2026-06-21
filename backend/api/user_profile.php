@@ -27,7 +27,7 @@ try {
     // ==========================================
     if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Bitte einloggen.']);
+        echo json_encode(['success' => false, 'error' => 'Please log in.']);
         exit;
     }
 
@@ -47,7 +47,7 @@ try {
 
         if (empty($users)) {
             http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'User nicht gefunden.']);
+            echo json_encode(['success' => false, 'error' => 'User not found.']);
             exit;
         }
 
@@ -85,7 +85,7 @@ try {
         $oldPassword = $input['old_password'] ?? '';
         if (empty($oldPassword)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Altes Passwort ist erforderlich.']);
+            echo json_encode(['success' => false, 'error' => 'Old password is required.']);
             exit;
         }
 
@@ -99,7 +99,7 @@ try {
 
         if (empty($users)) {
             http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'User nicht gefunden.']);
+            echo json_encode(['success' => false, 'error' => 'User not found.']);
             exit;
         }
 
@@ -108,7 +108,7 @@ try {
         // Passwort-Verifikation
         if (!password_verify($oldPassword, $user['password_hash'])) {
             http_response_code(401);
-            echo json_encode(['success' => false, 'error' => 'Altes Passwort ist falsch.']);
+            echo json_encode(['success' => false, 'error' => 'Old password is incorrect.']);
             exit;
         }
 
@@ -122,7 +122,7 @@ try {
         if (!empty($newPassword)) {
             if (strlen($newPassword) < 6) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Passwort muss mindestens 6 Zeichen lang sein.']);
+                echo json_encode(['success' => false, 'error' => 'Password must be at least 6 characters long.']);
                 exit;
             }
             $updateData['password_hash'] = password_hash($newPassword, PASSWORD_BCRYPT);
@@ -136,7 +136,7 @@ try {
             );
             if (!empty($existing)) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Dieser Benutzername ist bereits vergeben.']);
+                echo json_encode(['success' => false, 'error' => 'This username is already taken.']);
                 exit;
             }
             $updateData['username'] = trim($newUsername);
@@ -146,7 +146,7 @@ try {
         if (!empty($newEmail) && $newEmail !== $user['email']) {
             if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Ungültige E-Mail-Adresse.']);
+                echo json_encode(['success' => false, 'error' => 'This username is already taken.']);
                 exit;
             }
             $existing = $db->query(
@@ -155,7 +155,7 @@ try {
             );
             if (!empty($existing)) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Diese E-Mail-Adresse ist bereits registriert.']);
+                echo json_encode(['success' => false, 'error' => 'This email address is already registered.']);
                 exit;
             }
             $updateData['email'] = trim($newEmail);
@@ -164,7 +164,7 @@ try {
         // Falls nichts zu ändern ist
         if (empty($updateData)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Keine Änderungen durchzuführen.']);
+            echo json_encode(['success' => false, 'error' => 'No changes to apply.']);
             exit;
         }
 
@@ -180,11 +180,11 @@ try {
             http_response_code(200);
             echo json_encode([
                 'success' => true,
-                'message' => 'Profil erfolgreich aktualisiert.'
+                'message' => 'Profile updated successfully.'
             ]);
         } else {
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Fehler beim Speichern der Änderungen.']);
+            echo json_encode(['success' => false, 'error' => 'Error saving changes.']);
         }
         exit;
     }

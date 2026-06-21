@@ -23,7 +23,7 @@ class Database {
             ]);
         } catch (PDOException $e) {
             // Saubere JSON-Error-Message statt PHP-Fatal-Error
-            die(json_encode(['success' => false, 'error' => 'Datenbankverbindung fehlgeschlagen.']));
+            die(json_encode(['success' => false, 'error' => 'Connection to the database failed.']));
         }
     }
 
@@ -34,8 +34,10 @@ class Database {
         }
         return self::$instance;
     }
-
-    // Methode: query() -> Für SELECTs oder komplexe Custom-Queries
+    /**
+     * @return array|bool
+     * Methode: query() -> Für SELECTs oder komplexe Custom-Queries
+     */
     public function query($sql, $params = []) {
         try {
             $stmt = $this->pdo->prepare($sql);
