@@ -14,39 +14,36 @@ class User {
     private $is_active;
     private $created_at;
     private $updated_at;
+    
+    // NEU: Zusätzliche Profilfelder
+    private $salutation;
+    private $first_name;
+    private $last_name;
+    private $full_name;
+    private $address;
+    private $postal_code;
+    private $city;
 
     public function __construct() {
         $this->db = Database::getInstance();
     }
 
     // Getter-Methoden
-    public function getId() {
-        return $this->id;
-    }
-
-    public function getUsername() {
-        return $this->username;
-    }
-
-    public function getEmail() {
-        return $this->email;
-    }
-
-    public function getRole() {
-        return $this->role;
-    }
-
-    public function isActive() {
-        return $this->is_active;
-    }
-
-    public function getCreatedAt() {
-        return $this->created_at;
-    }
-
-    public function getUpdatedAt() {
-        return $this->updated_at;
-    }
+    public function getId() { return $this->id; }
+    public function getUsername() { return $this->username; }
+    public function getEmail() { return $this->email; }
+    public function getRole() { return $this->role; }
+    public function isActive() { return $this->is_active; }
+    public function getCreatedAt() { return $this->created_at; }
+    public function getUpdatedAt() { return $this->updated_at; }
+    
+    public function getSalutation() { return $this->salutation; }
+    public function getFirstName() { return $this->first_name; }
+    public function getLastName() { return $this->last_name; }
+    public function getFullName() { return $this->full_name; }
+    public function getAddress() { return $this->address; }
+    public function getPostalCode() { return $this->postal_code; }
+    public function getCity() { return $this->city; }
 
     // Setter-Methoden
     public function setUsername($username) {
@@ -76,7 +73,8 @@ class User {
      */
     public static function getByUsername($username) {
         $db = Database::getInstance();
-        $sql = "SELECT id, username, email, password_hash, role, is_active, created_at, updated_at 
+        $sql = "SELECT id, username, email, password_hash, role, is_active, created_at, updated_at, 
+                       salutation, first_name, last_name, full_name, address, postal_code, city 
                 FROM users 
                 WHERE username = ?";
         $results = $db->query($sql, [$username]);
@@ -90,7 +88,8 @@ class User {
      */
     public static function getByEmail($email) {
         $db = Database::getInstance();
-        $sql = "SELECT id, username, email, password_hash, role, is_active, created_at, updated_at 
+        $sql = "SELECT id, username, email, password_hash, role, is_active, created_at, updated_at, 
+                       salutation, first_name, last_name, full_name, address, postal_code, city 
                 FROM users 
                 WHERE email = ?";
         $results = $db->query($sql, [$email]);
@@ -104,7 +103,8 @@ class User {
      */
     public static function getById($id) {
         $db = Database::getInstance();
-        $sql = "SELECT id, username, email, password_hash, role, is_active, created_at, updated_at 
+        $sql = "SELECT id, username, email, password_hash, role, is_active, created_at, updated_at, 
+                       salutation, first_name, last_name, full_name, address, postal_code, city 
                 FROM users 
                 WHERE id = ?";
         $results = $db->query($sql, [$id]);
@@ -117,7 +117,8 @@ class User {
      */
     public static function getAll() {
         $db = Database::getInstance();
-        $sql = "SELECT id, username, email, role, is_active, created_at, updated_at 
+        $sql = "SELECT id, username, email, role, is_active, created_at, updated_at, 
+                       salutation, first_name, last_name, full_name, address, postal_code, city 
                 FROM users 
                 ORDER BY created_at DESC";
         return $db->query($sql);
@@ -125,7 +126,7 @@ class User {
 
     /**
      * Neuen Benutzer registrieren
-     * @param array $data Benutzerdaten (username, email, password)
+     * @param array $data Benutzerdaten
      * @return int|false Neue User-ID oder false
      */
     public function register($data) {
@@ -147,7 +148,14 @@ class User {
             'email' => trim($data['email']),
             'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
             'role' => 'user',
-            'is_active' => 1
+            'is_active' => 1,
+            'salutation' => trim($data['salutation'] ?? ''),
+            'first_name' => trim($data['first_name'] ?? ''),
+            'last_name' => trim($data['last_name'] ?? ''),
+            'full_name' => trim($data['full_name'] ?? ''),
+            'address' => trim($data['address'] ?? ''),
+            'postal_code' => trim($data['postal_code'] ?? ''),
+            'city' => trim($data['city'] ?? '')
         ];
 
         return $this->db->insert('users', $insertData);
@@ -197,6 +205,14 @@ class User {
             $updateData['password_hash'] = password_hash($data['password'], PASSWORD_BCRYPT);
         }
 
+        // Neue Felder einfügen
+        $optionalFields = ['salutation', 'first_name', 'last_name', 'full_name', 'address', 'postal_code', 'city', 'username'];
+        foreach ($optionalFields as $field) {
+            if (isset($data[$field])) {
+                $updateData[$field] = trim($data[$field]);
+            }
+        }
+
         if (empty($updateData)) {
             throw new Exception('No data to update.');
         }
@@ -231,7 +247,14 @@ class User {
             'role' => $this->role,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
+            'updated_at' => $this->updated_at,
+            'salutation' => $this->salutation,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'full_name' => $this->full_name,
+            'address' => $this->address,
+            'postal_code' => $this->postal_code,
+            'city' => $this->city
         ];
     }
 }

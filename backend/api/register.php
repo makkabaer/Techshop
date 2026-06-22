@@ -1,46 +1,79 @@
 <?php
 session_start();
-header('Content-Type: application/json'); // Sagt dem Frontend: Hier kommt JSON!
+header('Content-Type: application/json; charset=utf-8');
 require_once '../classes/Database.php';
 
-// Prüfen, ob es ein POST-Request ist
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'error' => 'Invalid request method.']);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Invalid request method. POST required.']);
     exit;
 }
 
-// Daten aus dem $_POST-Array holen (mit Fallback auf leere Strings)
+// Alle neuen Felder abfangen
 $username = trim($_POST['username'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
+$salutation = trim($_POST['salutation'] ?? '');
+$first_name = trim($_POST['first_name'] ?? '');
+$last_name = trim($_POST['last_name'] ?? '');
+$full_name = trim($_POST['full_name'] ?? '');
+$address = trim($_POST['address'] ?? '');
+$postal_code = trim($_POST['postal_code'] ?? '');
+$city = trim($_POST['city'] ?? '');
 
-// Basis-Validierung
 if (empty($username) || empty($email) || empty($password)) {
-    echo json_encode(['success' => false, 'error' => 'Please fill out every field.']);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Username, email and password are required.']);
+    exit;
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Invalid email address.']);
+    exit;
+}
+
+if (strlen($password) < 6) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Password must be at least 6 characters long.']);
     exit;
 }
 
 $db = Database::getInstance();
 
-// Prüfen, ob E-Mail oder Username schon existieren
-$existingUser = $db->query("SELECT id FROM users WHERE email = ? OR username = ?", [$email, $username]);
+// Prüfen, ob User oder Email schon existiert
+$existingUser = $db->query("SELECT id FROM users WHERE username = ? OR email = ?", [$username, $email]);
+
 if (!empty($existingUser)) {
-    echo json_encode(['success' => false, 'error' => 'Username or email is already in use.']);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Username or email already exists.']);
     exit;
 }
 
-// Passwort verschlüsseln
-$password_hash = password_hash($password, PASSWORD_DEFAULT);
+// Passwort hashen
+$password_hash = password_hash($password, PASSWORD_BCRYPT);
 
-// User in die Datenbank eintragen
-$newUserId = $db->insert('users', [
+// User in DB eintragen (inklusive neuer Felder)
+$insertData = [
     'username' => $username,
     'email' => $email,
-    'password_hash' => $password_hash
-]);
+    'password_hash' => $password_hash,
+    'role' => 'user',
+    'salutation' => $salutation,
+    'first_name' => $first_name,
+    'last_name' => $last_name,
+    'full_name' => $full_name,
+    'address' => $address,
+    'postal_code' => $postal_code,
+    'city' => $city
+];
+
+$newUserId = $db->insert('users', $insertData);
 
 if ($newUserId) {
-    echo json_encode(['success' => true, 'message' => 'Registration successful! You can now log in.']);
+    http_response_code(201);
+    echo json_encode(['success' => true, 'message' => 'Registration successful.', 'user_id' => $newUserId]);
 } else {
-    echo json_encode(['success' => false, 'error' => 'There was a problem saving to the database.']);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Database error during registration.']);
 }
