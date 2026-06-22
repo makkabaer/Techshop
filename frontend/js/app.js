@@ -6,6 +6,7 @@ $(function () {
   let activeCategory = "";
   let catalogLastOrders = [];
   let currentUser = null;
+  let redirectToCheckoutAfterAuth = false;
 
   function escapeHtml(value) {
     return $("<div>").text(value == null ? "" : String(value)).html();
@@ -156,7 +157,6 @@ $(function () {
     $("#accountNewPassword").val("");
     $("#accountEmail").val("").attr("placeholder", email ? maskEmail(email) : $("#accountEmail").attr("placeholder"));
     $("#accountUsername").text(username);
-    $("#dashboardUsername").text(username);
 
     if (currentUser) {
       currentUser.username = username;
@@ -660,8 +660,12 @@ $(function () {
   function loadAccountProfile() {
     const storedProfile = getStoredProfile(currentUser && currentUser.username);
 
-    $("#accountFullName").val(storedProfile.full_name || "");
+    $("#accountSalutation").val(storedProfile.salutation || "");
+    $("#accountFirstName").val(storedProfile.first_name || "");
+    $("#accountLastName").val(storedProfile.last_name || "");
     $("#accountAddress").val(storedProfile.address || "");
+    $("#accountPostalCode").val(storedProfile.postal_code || "");
+    $("#accountCity").val(storedProfile.city || "");
     $("#accountUsernameInput").val(currentUser && currentUser.username ? currentUser.username : "");
     $("#accountEmail").attr("placeholder", "m***@email.com").val("");
     $("#accountNewPassword").val("");
@@ -680,6 +684,9 @@ $(function () {
         const data = response.data || {};
         const username = data.username || (currentUser && currentUser.username) || "";
         const profile = getStoredProfile(username);
+        const fullNameParts = String(data.full_name || profile.full_name || "").trim().split(/\s+/);
+        const firstName = data.first_name || profile.first_name || fullNameParts.shift() || "";
+        const lastName = data.last_name || profile.last_name || fullNameParts.join(" ");
 
         currentUser = $.extend({}, currentUser, data);
         $("#accountUsername").text(username || "User");
@@ -687,8 +694,12 @@ $(function () {
         $("#accountEmail")
           .attr("placeholder", data.email || maskEmail(data.email_full))
           .val("");
-        $("#accountFullName").val(data.full_name || profile.full_name || "");
+        $("#accountSalutation").val(data.salutation || profile.salutation || "");
+        $("#accountFirstName").val(firstName);
+        $("#accountLastName").val(lastName);
         $("#accountAddress").val(data.address || profile.address || "");
+        $("#accountPostalCode").val(data.postal_code || profile.postal_code || "");
+        $("#accountCity").val(data.city || profile.city || "");
       });
   }
 
@@ -843,11 +854,19 @@ $(function () {
     event.preventDefault();
     const section = $(this).data("section");
 
+    if (!currentUser && (section === "home" || section === "products" || section === "cart")) {
+      redirectToCheckoutAfterAuth = false;
+    }
+
     setActiveNav(section);
     setActiveAdminQuickAction(section);
 
     if (section === "home") {
-      checkAuthStatus();
+      if (currentUser && currentUser.role === "admin") {
+        showAdminDashboard(currentUser.username);
+      } else {
+        showSection("#homeSection");
+      }
     } else if (section === "account") {
       showSection("#accountSection");
       loadAccountProfile();
@@ -859,6 +878,7 @@ $(function () {
       loadCart();
     } else if (section === "checkout") {
       if (!currentUser || !currentUser.logged_in) {
+        redirectToCheckoutAfterAuth = true;
         showSection("#loginSection");
         setActiveNav("login");
         showMessage("error", "Please log in before checkout.");
@@ -937,10 +957,17 @@ $(function () {
 
     const form = $(this);
     const $submitButton = form.find("[type='submit']");
+    const firstName = $.trim($("#registerFirstName").val());
+    const lastName = $.trim($("#registerLastName").val());
     const data = {
       username: $.trim($("#registerUsername").val()),
-      full_name: $.trim($("#registerFullName").val()),
+      salutation: $("#registerSalutation").val(),
+      first_name: firstName,
+      last_name: lastName,
+      full_name: firstName + " " + lastName,
       address: $.trim($("#registerAddress").val()),
+      postal_code: $.trim($("#registerPostalCode").val()),
+      city: $.trim($("#registerCity").val()),
       email: $.trim($("#registerEmail").val()),
       password: $("#registerPassword").val()
     };
@@ -958,8 +985,13 @@ $(function () {
 
         if (isSuccess) {
           saveStoredProfile(data.username, {
+            salutation: data.salutation,
+            first_name: data.first_name,
+            last_name: data.last_name,
             full_name: data.full_name,
-            address: data.address
+            address: data.address,
+            postal_code: data.postal_code,
+            city: data.city
           });
           form.trigger("reset");
           setTimeout(function () {
@@ -982,7 +1014,6 @@ $(function () {
   function showDashboard(username) {
     $(".content-section").hide();
     $("#dashboardSection").fadeIn(150);
-    $("#dashboardUsername").text(username);
     $("#accountUsername").text(username);
     loadProductCatalog();
     loadCart();
@@ -1065,6 +1096,13 @@ $(function () {
             $(".customer-only").show();
             $(".not-admin").show();
             showDashboard(response.username);
+
+            if (redirectToCheckoutAfterAuth) {
+              redirectToCheckoutAfterAuth = false;
+              showSection("#checkoutSection");
+              setActiveNav("cart");
+              loadCart();
+            }
           }
         } else {
           // Not logged in
@@ -1074,7 +1112,7 @@ $(function () {
           $(".admin-only").hide();
           $(".customer-only").hide();
           $(".not-admin").show();
-          setCartSummary({ total_items: 0, total_price: 0 });
+          loadCart();
           showSection("#homeSection");
           $(".nav-link").removeClass("active");
           $("[data-section='home']").addClass("active");
@@ -1171,13 +1209,27 @@ $(function () {
     const email = $.trim($("#accountEmail").val());
     const newPassword = $("#accountNewPassword").val();
     const oldPassword = $("#accountCurrentPassword").val();
+    const firstName = $.trim($("#accountFirstName").val());
+    const lastName = $.trim($("#accountLastName").val());
     const profileData = {
-      full_name: $.trim($("#accountFullName").val()),
-      address: $.trim($("#accountAddress").val())
+      salutation: $("#accountSalutation").val(),
+      first_name: firstName,
+      last_name: lastName,
+      full_name: $.trim(firstName + " " + lastName),
+      address: $.trim($("#accountAddress").val()),
+      postal_code: $.trim($("#accountPostalCode").val()),
+      city: $.trim($("#accountCity").val())
     };
     const requestData = {
       username: username,
-      old_password: oldPassword
+      old_password: oldPassword,
+      salutation: profileData.salutation,
+      first_name: profileData.first_name,
+      last_name: profileData.last_name,
+      full_name: profileData.full_name,
+      address: profileData.address,
+      postal_code: profileData.postal_code,
+      city: profileData.city
     };
 
     if (email) {

@@ -24,9 +24,7 @@
       <div class="collapse navbar-collapse" id="mainNav">
         <ul class="navbar-nav ms-auto">
   <li class="nav-item"><a class="nav-link active" href="#" data-section="home">Home</a></li>
-  <li class="nav-item guest-only"><a class="nav-link" href="#" data-section="login">Login</a></li>
-  <li class="nav-item guest-only"><a class="nav-link" href="#" data-section="register">Register</a></li>
-  <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="products">Catalog</a></li>
+  <li class="nav-item not-admin"><a class="nav-link" href="#" data-section="products">Catalog</a></li>
   <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="account">My Account</a></li>
   <li class="nav-item customer-only" style="display: none;"><a class="nav-link" href="#" data-section="orders">Orders</a></li>
   <li class="nav-item not-admin"><a class="nav-link" href="#" data-section="cart">Cart <span class="badge text-bg-light ms-1" id="navCartCount">0</span></a></li>
@@ -47,7 +45,11 @@
         <div class="card border-0 shadow-sm">
           <div class="card-body p-4 p-md-5">
             <h2 class="h3 mb-3">Welcome to TechShop</h2>
-            <p class="text-secondary mb-0">Use the navigation above to log in to your existing account or create a new account.</p>
+            <p class="text-secondary mb-4">Browse our products and fill your cart. You only need an account when you proceed to checkout.</p>
+            <div class="d-flex flex-wrap gap-2 guest-only">
+              <a href="#" class="btn btn-primary" data-section="login">Login</a>
+              <a href="#" class="btn btn-outline-dark" data-section="register">Register</a>
+            </div>
           </div>
         </div>
       </section>
@@ -73,6 +75,7 @@
 </div>
                   <button type="submit" class="btn btn-primary w-100">Login</button>
                 </form>
+                <p class="text-center text-secondary mt-3 mb-0">No account? <a href="#" data-section="register">Register now</a></p>
               </div>
             </div>
           </div>
@@ -87,20 +90,45 @@
                 <h2 class="h4 mb-4">Register</h2>
                 <form id="registerForm" novalidate>
                   <div class="mb-3">
-                    <label for="registerUsername" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="registerUsername" name="username" required>
+                    <label for="registerSalutation" class="form-label">Salutation</label>
+                    <select class="form-select" id="registerSalutation" name="salutation" required>
+                      <option value="" selected disabled>Please select</option>
+                      <option value="Mr">Mr</option>
+                      <option value="Ms">Ms</option>
+                      <option value="Mx">Mx</option>
+                    </select>
+                  </div>
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                      <label for="registerFirstName" class="form-label">First Name</label>
+                      <input type="text" class="form-control" id="registerFirstName" name="first_name" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="registerLastName" class="form-label">Last Name</label>
+                      <input type="text" class="form-control" id="registerLastName" name="last_name" required>
+                    </div>
                   </div>
                   <div class="mb-3">
-                    <label for="registerFullName" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="registerFullName" name="full_name" required>
+                    <label for="registerAddress" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="registerAddress" name="address" placeholder="Street and house number" required>
+                  </div>
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                      <label for="registerPostalCode" class="form-label">Postal Code</label>
+                      <input type="text" class="form-control" id="registerPostalCode" name="postal_code" inputmode="numeric" required>
+                    </div>
+                    <div class="col-md-8">
+                      <label for="registerCity" class="form-label">City</label>
+                      <input type="text" class="form-control" id="registerCity" name="city" required>
+                    </div>
                   </div>
                   <div class="mb-3">
                     <label for="registerEmail" class="form-label">Email</label>
                     <input type="email" class="form-control" id="registerEmail" name="email" required>
                   </div>
                   <div class="mb-3">
-                    <label for="registerAddress" class="form-label">Address</label>
-                    <textarea class="form-control" id="registerAddress" name="address" rows="3" placeholder="Street, house number, postal code, city" required></textarea>
+                    <label for="registerUsername" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="registerUsername" name="username" required>
                   </div>
                   <div class="mb-3">
                     <label for="registerPassword" class="form-label">Password</label>
@@ -109,6 +137,7 @@
                   
                   <button type="submit" class="btn btn-success w-100">Register</button>
                 </form>
+                <p class="text-center text-secondary mt-3 mb-0">Already registered? <a href="#" data-section="login">Login</a></p>
               </div>
             </div>
           </div>
@@ -120,7 +149,7 @@
           <div class="col-12">
             <div class="card border-0 shadow-sm mb-4">
               <div class="card-body p-4">
-                <h2 class="h4 mb-3">Welcome, <span id="dashboardUsername">User</span>!</h2>
+                <h2 class="h4 mb-3">Product Catalog</h2>
                 <p class="text-secondary mb-0">Browse our catalog and add products to your cart.</p>
               </div>
             </div>
@@ -157,7 +186,6 @@
           <div class="col-lg-7 col-xl-6">
             <div class="card border-0 shadow-sm">
               <div class="card-body p-4 p-md-5">
-                <span class="badge bg-dark text-uppercase mb-3">Customer Account</span>
                 <h2 class="h3 mb-4">My Account</h2>
                 <div class="border rounded-3 bg-light p-3 mb-4">
                   <small class="text-secondary d-block mb-1">Logged in as</small>
@@ -165,12 +193,37 @@
                 </div>
                 <form id="accountForm" class="mb-4" novalidate>
                   <div class="mb-3">
-                    <label for="accountFullName" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="accountFullName" name="full_name" placeholder="Your full name">
+                    <label for="accountSalutation" class="form-label">Salutation</label>
+                    <select class="form-select" id="accountSalutation" name="salutation">
+                      <option value="">Please select</option>
+                      <option value="Mr">Mr</option>
+                      <option value="Ms">Ms</option>
+                      <option value="Mx">Mx</option>
+                    </select>
+                  </div>
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                      <label for="accountFirstName" class="form-label">First Name</label>
+                      <input type="text" class="form-control" id="accountFirstName" name="first_name">
+                    </div>
+                    <div class="col-md-6">
+                      <label for="accountLastName" class="form-label">Last Name</label>
+                      <input type="text" class="form-control" id="accountLastName" name="last_name">
+                    </div>
                   </div>
                   <div class="mb-3">
                     <label for="accountAddress" class="form-label">Address</label>
-                    <textarea class="form-control" id="accountAddress" name="address" rows="3" placeholder="Street, house number, postal code, city"></textarea>
+                    <input type="text" class="form-control" id="accountAddress" name="address" placeholder="Street and house number">
+                  </div>
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                      <label for="accountPostalCode" class="form-label">Postal Code</label>
+                      <input type="text" class="form-control" id="accountPostalCode" name="postal_code" inputmode="numeric">
+                    </div>
+                    <div class="col-md-8">
+                      <label for="accountCity" class="form-label">City</label>
+                      <input type="text" class="form-control" id="accountCity" name="city">
+                    </div>
                   </div>
                   <div class="mb-3">
                     <label for="accountUsernameInput" class="form-label">Username</label>
@@ -205,7 +258,6 @@
           <div class="col-lg-8">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body p-4 p-md-5">
-                <span class="badge bg-dark text-uppercase mb-3">Admin Area</span>
                 <h2 class="h3 mb-3">Admin-Dashboard</h2>
                 <p class="text-secondary mb-4">Welcome back, <strong id="adminName"></strong>. Use the sections on the right to manage products, customers, and orders.</p>
                 <div class="d-flex flex-wrap gap-2">
@@ -237,7 +289,6 @@
           <div class="card-body p-4 p-md-5">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
               <div>
-                <span class="badge bg-dark text-uppercase mb-2">Admin Tools</span>
                 <h2 class="h3 mb-1">Edit Customers</h2>
                 <p class="text-secondary mb-0">Deactivate or reactivate customers from the list below.</p>
               </div>
@@ -276,7 +327,6 @@
           <div class="card-body p-4 p-md-5">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
               <div>
-                <span class="badge bg-dark text-uppercase mb-2">Admin Tools</span>
                 <h2 class="h3 mb-1">Manage Orders</h2>
                 <p class="text-secondary mb-0">Review orders and remove individual products when necessary.</p>
               </div>
@@ -316,7 +366,6 @@
           <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body p-4 p-md-5">
-                <span class="badge bg-dark text-uppercase mb-2">Admin Tools</span>
                 <h2 class="h3 mb-4">Create Product</h2>
                 <form id="addProductForm" enctype="multipart/form-data" novalidate>
                   <div class="mb-3">
@@ -336,6 +385,15 @@
                       <label for="addProductRating" class="form-label">Rating</label>
                       <input type="number" class="form-control" id="addProductRating" name="rating" step="0.1" min="0" max="5" value="0">
                     </div>
+                  </div>
+                  <div class="mb-3 mt-3">
+                    <label for="addProductCategory" class="form-label">Category</label>
+                    <select class="form-select" id="addProductCategory" name="category_id" required>
+                      <option value="" selected disabled>Please select</option>
+                      <option value="1">CPU</option>
+                      <option value="2">RAM</option>
+                      <option value="3">GPU</option>
+                    </select>
                   </div>
                   <div class="mb-3 mt-3">
                     <label for="addProductImage" class="form-label">Product Image</label>
@@ -375,6 +433,15 @@
                     </div>
                   </div>
                   <div class="mb-3 mt-3">
+                    <label for="editProductCategory" class="form-label">Category</label>
+                    <select class="form-select" id="editProductCategory" name="category_id" required>
+                      <option value="" selected disabled>Please select</option>
+                      <option value="1">CPU</option>
+                      <option value="2">RAM</option>
+                      <option value="3">GPU</option>
+                    </select>
+                  </div>
+                  <div class="mb-3 mt-3">
                     <label for="editProductImage" class="form-label">Replace Image</label>
                     <input type="file" class="form-control" id="editProductImage" name="product_image" accept="image/*">
                   </div>
@@ -406,7 +473,6 @@
               <div class="card-body p-4 p-md-5">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                   <div>
-                    <span class="badge bg-dark text-uppercase mb-2">Sprint 3</span>
                     <h2 class="h3 mb-1">Cart</h2>
                     <p class="text-secondary mb-0">Review products, quantities, and your total price.</p>
                   </div>
@@ -446,7 +512,6 @@
               <div class="card-body p-4 p-md-5">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                   <div>
-                    <span class="badge bg-dark text-uppercase mb-2">Sprint 3</span>
                     <h2 class="h3 mb-1">Checkout</h2>
                     <p class="text-secondary mb-0">Enter your delivery address and place your order.</p>
                   </div>
@@ -478,7 +543,6 @@
           <div class="card-body p-4 p-md-5">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
               <div>
-                <span class="badge bg-dark text-uppercase mb-2">Customer Account</span>
                 <h2 class="h3 mb-1">My Orders</h2>
                 <p class="text-secondary mb-0">Review your previous orders.</p>
               </div>
