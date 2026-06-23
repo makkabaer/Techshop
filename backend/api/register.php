@@ -21,9 +21,32 @@ $address = trim($_POST['address'] ?? '');
 $postal_code = trim($_POST['postal_code'] ?? '');
 $city = trim($_POST['city'] ?? '');
 
+// 1. Basis-Pflichtfelder
 if (empty($username) || empty($email) || empty($password)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Username, email and password are required.']);
+    exit;
+}
+
+// 2. NEU: Erweiterte Pflichtfelder (verhindert den F12-Hack)
+if (empty($salutation) || empty($first_name) || empty($last_name) || empty($address) || empty($postal_code) || empty($city)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'All profile fields (Name, Address, etc.) are required.']);
+    exit;
+}
+
+// 3. NEU: Strenge Inhalts-Validierung
+$allowed_salutations = ['Mr', 'Ms', 'Mx'];
+if (!in_array($salutation, $allowed_salutations)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Invalid salutation.']);
+    exit;
+}
+
+// Postleitzahl darf nur aus Zahlen, Buchstaben und Leerzeichen bestehen (keine Minuszeichen oder Sonderzeichen)
+if (!preg_match('/^[0-9A-Za-z\s\-]{3,10}$/', $postal_code)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Invalid postal code format.']);
     exit;
 }
 
