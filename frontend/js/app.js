@@ -854,6 +854,17 @@ $(function () {
     event.preventDefault();
     const section = $(this).data("section");
 
+    if (currentUser && (section === "login" || section === "register")) {
+      if (currentUser.role === "admin") {
+        showAdminDashboard(currentUser.username);
+      } else {
+        showSection("#accountSection");
+        setActiveNav("account");
+        loadAccountProfile();
+      }
+      return;
+    }
+
     if (!currentUser && (section === "home" || section === "products" || section === "cart")) {
       redirectToCheckoutAfterAuth = false;
     }
